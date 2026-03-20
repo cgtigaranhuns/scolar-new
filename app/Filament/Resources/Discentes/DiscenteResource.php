@@ -20,6 +20,7 @@ use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use GuzzleHttp\Psr7\UploadedFile;
+use Illuminate\Support\Facades\Hash;
 
 class DiscenteResource extends Resource
 {
@@ -62,6 +63,12 @@ class DiscenteResource extends Resource
                     ->visibility('public')
                     ->label('Foto'),
                 TextInput::make('informacoes_adicionais'),
+                 TextInput::make('senha_responsavel')
+                    ->label('Senha do Responsável')
+                    ->password()
+                    ->dehydrateStateUsing(fn ($state) => Hash::make($state))
+                    ->dehydrated(fn ($state) => filled($state))
+                    ->required(fn (string $context): bool => $context === 'create'),
             ]);
     }
 

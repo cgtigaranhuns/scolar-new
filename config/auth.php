@@ -38,7 +38,11 @@ return [
     'guards' => [
         'web' => [
             'driver' => 'session',
-            'provider' => 'users',
+            'provider' => 'multi-ldap',
+        ],
+        'filament' => [
+            'driver' => 'session',
+            'provider' => 'multi-ldap',
         ],
     ],
 
@@ -62,15 +66,16 @@ return [
     'providers' => [
         'users' => [
             'driver' => 'eloquent',
-            'model' => env('AUTH_MODEL', App\Models\User::class),
+            'model' => App\Models\User::class,
         ],
-
+        'multi-ldap' => [
+            'driver' => 'multi-ldap',
+        ],
         // 'users' => [
         //     'driver' => 'database',
         //     'table' => 'users',
         // ],
     ],
-
     /*
     |--------------------------------------------------------------------------
     | Resetting Passwords

@@ -16,6 +16,7 @@ class Discente extends Model
         'status_qa',
         'foto',
         'informacoes_adicionais',
+        'senha_responsavel',
     ];
 
     public function turmaRelacionada()

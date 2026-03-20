@@ -35,6 +35,9 @@ class AreaConhecimentoResource extends Resource
     {
         return $table
             ->columns([
+                TextColumn::make('id')
+                    ->label('ID')
+                    ->sortable(),                    
                 TextColumn::make('nome')
                     ->searchable(),
                 TextColumn::make('created_at')
