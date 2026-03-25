@@ -19,7 +19,9 @@ class ConselhoResource extends Resource
 {
     protected static ?string $model = Conselho::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|\UnitEnum|null $navigationGroup = 'Conselhos de Classe';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-calendar-days';
+    protected static ?string $title = 'Cadastro de Conselho';
 
     public static function form(Schema $schema): Schema
     {

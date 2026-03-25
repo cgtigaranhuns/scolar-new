@@ -12,6 +12,8 @@ use Filament\Schemas\Schema;
 
 class ConselhoForm
 {
+   
+
     public static function configure(Schema $schema): Schema
     {
         return $schema
@@ -96,23 +98,24 @@ class ConselhoForm
                     ->required(),
                 ToggleButtons::make('status')
                     ->label('Status')
+                    ->default('Agendado')
                     ->inline()
                     ->options([
                         'Agendado' => 'Agendado',
-                        'Em Andamento' => 'Em Andamento',
+                        'Liberado' => 'Liberado',                        
                         'Concluído' => 'Concluído',
                         'Cancelado' => 'Cancelado'
                     ])
                     ->icons([
                         'Agendado' => 'heroicon-o-calendar',
-                        'Em Andamento' => 'heroicon-o-clock',
+                        'Liberado' => 'heroicon-o-check-badge',
                         'Concluído' => 'heroicon-o-check',
                         'Cancelado' => 'heroicon-o-x-mark',
                     ])
                     ->colors([
                         'Agendado' => 'primary',
-                        'Em Andamento' => 'warning',
-                        'Concluído' => 'success',
+                        'Liberado' => 'success',
+                        'Concluído' => 'warning',
                         'Cancelado' => 'danger',
                     ])
             ]);

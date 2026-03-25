@@ -13,7 +13,10 @@ class ManageAreaConhecimentos extends ManageRecords
     protected function getHeaderActions(): array
     {
         return [
-            CreateAction::make(),
+            CreateAction::make()
+                ->label('Adicionar')
+                ->icon('heroicon-o-plus')
+                ->modalHeading('Adicionar Nova Área de Conhecimento'),
         ];
     }
 }

@@ -37,16 +37,16 @@ return [
             'use_ssl' => env('LDAP_ADM_SSL', false),
             'use_tls' => env('LDAP_ADM_TLS', false),
     ],
-    'labs' => [
-        'hosts' => ['172.28.2.55'],
-        'username' => env('LDAP_LABS_USERNAME'),
-        'password' => env('LDAP_LABS_PASSWORD'),
-        'port' => env('LDAP_LABS_PORT', 389),
-        'base_dn' => env('LDAP_LABS_BASE_DN', 'dc=labs,dc=garanhuns,dc=ifpe'),
-        'timeout' => env('LDAP_LABS_TIMEOUT', 5),
-        'use_ssl' => env('LDAP_LABS_SSL', false),
-        'use_tls' => env('LDAP_LABS_TLS', false),
-    ],
+    // 'local' => [
+    //     'hosts' => ['172.28.2.55'],
+    //     'username' => env('LDAP_LABS_USERNAME'),
+    //     'password' => env('LDAP_LABS_PASSWORD'),
+    //     'port' => env('LDAP_LABS_PORT', 389),
+    //     'base_dn' => env('LDAP_LABS_BASE_DN', 'dc=labs,dc=garanhuns,dc=ifpe'),
+    //     'timeout' => env('LDAP_LABS_TIMEOUT', 5),
+    //     'use_ssl' => env('LDAP_LABS_SSL', false),
+    //     'use_tls' => env('LDAP_LABS_TLS', false),
+    // ],
     ],
 
     /*

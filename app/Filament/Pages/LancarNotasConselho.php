@@ -20,6 +20,7 @@ use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
+use Filament\Schemas\Components\Grid;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\HtmlString;
@@ -27,8 +28,9 @@ use Illuminate\Support\HtmlString;
 class LancarNotasConselho extends Page
 {
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-pencil-square';
-    protected static ?string $title = 'Lançamento de Conceitos';
+    protected static ?string $title = 'Avaliações dos Estudantes';
     protected string $view = 'filament.pages.lancar-notas-conselho';
+    protected static string|\UnitEnum|null $navigationGroup = 'Conselhos de Classe';
 
     public array $data = [];
 
@@ -66,13 +68,18 @@ class LancarNotasConselho extends Page
                             ->options(function () {
                                 $professor = Professor::where('matricula', Auth::user()->username)->first();
 
+
                                 if (! $professor) {
                                     return [];
                                 }
 
-                                $turmaIds = $professor->turmas()->pluck('turmas.id');
-
-                                return Conselho::whereIn('turma_id', $turmaIds)
+                                return Conselho::where('status', 'Liberado')
+                                    ->where(function ($query) use ($professor) {
+                                        $query->where('professor01_id', $professor->id)
+                                            ->orWhere('professor02_id', $professor->id)
+                                            ->orWhere('professor03_id', $professor->id)
+                                            ->orWhere('professor04_id', $professor->id);
+                                    })
                                     ->pluck('descricao', 'id');
                             })
                             ->live()
@@ -105,7 +112,7 @@ class LancarNotasConselho extends Page
                                         'nt_cooperacao'      => $item->{"nt_{$prefix}_cooperacao"},
                                         'obs_gestao'         => $item->{"obs_{$prefix}_gestao"},
                                         'obs_pais'           => $item->{"obs_{$prefix}_pais"},
-                                        'info_complementares'=> $item->{"info_{$prefix}_complementares"},
+                                        'info_complementares' => $item->{"info_{$prefix}_complementares"},
                                     ];
                                 })->toArray());
                             }),
@@ -117,14 +124,14 @@ class LancarNotasConselho extends Page
                         $area        = $professor?->areaConhecimento?->nome ?? '–';
                         $conselho    = Conselho::find($get('conselho_id') ?? 0);
                         $turma       = $conselho ? Turma::find($conselho->turma_id)?->nome ?? '–' : '–';
- 
+
                         return new HtmlString(
                             '<strong>Professor:</strong> ' . e(Auth::user()->name) . '<br>' .
-                            '<strong>Área de Conhecimento:</strong> ' . e($area) . '<br>' .
-                            '<strong>Turma:</strong> ' . e($turma)
+                                '<strong>Área de Conhecimento:</strong> ' . e($area) . '<br>' .
+                                '<strong>Turma:</strong> ' . e($turma)
                         );
                     })
-                    ->visible(fn (Get $get): bool => filled($get('conselho_id')))
+                    ->visible(fn(Get $get): bool => filled($get('conselho_id')))
                     ->components([
                         Repeater::make('lista_alunos')
                             ->label('Discentes da Turma')
@@ -146,58 +153,69 @@ class LancarNotasConselho extends Page
                                     ])
                                     ->columns(4),
 
-                                Section::make('Notas')
-                                    ->components([
-                                        ToggleButtons::make('nt_participacao')
-                                            ->label('Participação')
-                                            ->options(['A' => 'A', 'B' => 'B', 'C' => 'C'])
-                                            ->inline()
-                                            ->columnSpan(1),
-                                        ToggleButtons::make('nt_interesse')
-                                            ->label('Interesse')
-                                            ->options(['A' => 'A', 'B' => 'B', 'C' => 'C'])
-                                            ->inline()
-                                            ->columnSpan(1),
-                                        ToggleButtons::make('nt_organizacao')
-                                            ->label('Organização')
-                                            ->options(['A' => 'A', 'B' => 'B', 'C' => 'C'])
-                                            ->inline()
-                                            ->columnSpan(1),
-                                        ToggleButtons::make('nt_comprometimento')
-                                            ->label('Comprometimento')
-                                            ->options(['A' => 'A', 'B' => 'B', 'C' => 'C'])
-                                            ->inline()
-                                            ->columnSpan(1),
-                                        ToggleButtons::make('nt_disciplina')
-                                            ->label('Disciplina')
-                                            ->options(['A' => 'A', 'B' => 'B', 'C' => 'C'])
-                                            ->inline()
-                                            ->columnSpan(1),
-                                        ToggleButtons::make('nt_cooperacao')
-                                            ->label('Cooperação')
-                                            ->options(['A' => 'A', 'B' => 'B', 'C' => 'C'])
-                                            ->inline()
-                                            ->columnSpan(1),
-                                    ])
-                                    ->columns(6),
+                                Grid::make(2)
+                                    ->schema([
+                                        Section::make('Notas')
+                                            ->columns(2)
+                                            ->components([
+                                                ToggleButtons::make('nt_participacao')
+                                                    ->label('Participação')
+                                                    ->options(['A' => 'A', 'B' => 'B', 'C' => 'C'])
+                                                    ->inline()
+                                                    ->columnSpan(1),
+                                                ToggleButtons::make('nt_interesse')
+                                                    ->label('Interesse')
+                                                    ->options(['A' => 'A', 'B' => 'B', 'C' => 'C'])
+                                                    ->inline()
+                                                    ->columnSpan(1),
+                                                ToggleButtons::make('nt_organizacao')
+                                                    ->label('Organização')
+                                                    ->options(['A' => 'A', 'B' => 'B', 'C' => 'C'])
+                                                    ->inline()
+                                                    ->columnSpan(1),
+                                                ToggleButtons::make('nt_comprometimento')
+                                                    ->label('Comprometimento')
+                                                    ->options(['A' => 'A', 'B' => 'B', 'C' => 'C'])
+                                                    ->inline()
+                                                    ->columnSpan(1),
+                                                ToggleButtons::make('nt_disciplina')
+                                                    ->label('Disciplina')
+                                                    ->options(['A' => 'A', 'B' => 'B', 'C' => 'C'])
+                                                    ->inline()
+                                                    ->columnSpan(1),
+                                                ToggleButtons::make('nt_cooperacao')
+                                                    ->label('Cooperação')
+                                                    ->options(['A' => 'A', 'B' => 'B', 'C' => 'C'])
+                                                    ->inline()
+                                                    ->columnSpan(1),
+                                            ]),
 
-                                Section::make('Observações')
-                                    ->components([
-                                        Textarea::make('obs_gestao')
-                                            ->label('Observação Gestão'),
-                                        Textarea::make('obs_pais')
-                                            ->label('Observação Pais'),
-                                        Textarea::make('info_complementares')
-                                            ->label('Informações Complementares'),
-                                    ])
-                                    ->columns(1),
+                                        Section::make('Observações')
+                                            ->components([
+                                                Textarea::make('obs_gestao')
+                                                    ->label('Observação Gestão')
+                                                    ->autosize()
+                                                    ->columnSpan(3),
+                                                Textarea::make('obs_pais')
+                                                    ->label('Observação Pais')
+                                                    ->autosize()
+                                                    ->columnSpan(3),
+                                                Textarea::make('info_complementares')
+                                                    ->label('Informações Complementares')
+                                                    ->autosize()
+                                                    ->columnSpan(3),
+                                            ])
+                                            ->columns(3),
+                                    ]),
 
                                 Hidden::make('id'),
                             ])
+
                             ->columns(1)
                             ->addable(false)
                             ->deletable(false)
                             ->reorderable(false),
+                            
                     ]),
             ])
             ->statePath('data');
@@ -208,6 +226,15 @@ class LancarNotasConselho extends Page
         return [
             Action::make('salvar')
                 ->label('Salvar Alterações')
+                ->color('primary')
+                ->action('save'),
+        ];
+    }
+    protected function getFooterActions(): array
+    {
+        return [
+            Action::make('salvar')
+                ->label('Finalizar Lançamento')
                 ->color('primary')
                 ->action('save'),
         ];
@@ -248,7 +275,7 @@ class LancarNotasConselho extends Page
                     "nt_{$prefix}_cooperacao"      => $item['nt_cooperacao'] ?? null,
                     "obs_{$prefix}_gestao"         => $item['obs_gestao'] ?? null,
                     "obs_{$prefix}_pais"           => $item['obs_pais'] ?? null,
-                    "info_{$prefix}_complementares"=> $item['info_complementares'] ?? null,
+                    "info_{$prefix}_complementares" => $item['info_complementares'] ?? null,
                 ]);
             }
         });

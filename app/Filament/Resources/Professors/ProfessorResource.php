@@ -23,7 +23,10 @@ class ProfessorResource extends Resource
 {
     protected static ?string $model = Professor::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-user-group';
+    protected static ?string $label = 'Professores';
+    protected static ?string $navigationLabel = 'Professores';
+    protected static string|\UnitEnum|null $navigationGroup = 'Cadastros';
 
     public static function form(Schema $schema): Schema
     {

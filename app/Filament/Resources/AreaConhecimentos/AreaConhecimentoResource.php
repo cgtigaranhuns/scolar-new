@@ -21,6 +21,12 @@ class AreaConhecimentoResource extends Resource
     protected static ?string $model = AreaConhecimento::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static ?string $label = 'Áreas de Conhecimentos';
+    protected static ?string $navigationLabel = 'Áreas de Conhecimento';
+    protected static string|\UnitEnum|null $navigationGroup = 'Cadastros';
+    
+    
+
 
     public static function form(Schema $schema): Schema
     {

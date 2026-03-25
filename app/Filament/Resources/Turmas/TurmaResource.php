@@ -21,7 +21,11 @@ class TurmaResource extends Resource
 {
     protected static ?string $model = Turma::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-s-view-columns';
+    protected static ?string $label = 'Turmas';
+    protected static ?string $navigationLabel = 'Turmas';
+    protected static string|\UnitEnum|null $navigationGroup = 'Cadastros';  
+    
 
     public static function form(Schema $schema): Schema
     {

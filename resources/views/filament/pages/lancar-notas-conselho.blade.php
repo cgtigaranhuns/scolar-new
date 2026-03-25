@@ -4,7 +4,7 @@
 
         <div class="mt-6 flex justify-end">
             <x-filament::button type="submit">
-                Salvar Tudo
+                Salvar Alterações
             </x-filament::button>
         </div>
     </form>

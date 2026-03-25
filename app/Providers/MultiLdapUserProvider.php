@@ -4,14 +4,21 @@ namespace App\Providers;
 
 use Illuminate\Support\Str;
 use App\Models\AdmUser;
-use App\Models\LabsUser;
 use App\Models\Discente;
 use App\Models\User;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\UserProvider;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use LdapRecord\Laravel\Auth\LdapAuthenticatable;
 
+/**
+ * MultiLdapUserProvider
+ *
+ * Gerencia dois fluxos de autenticação:
+ * 1. ADM: Apenas números (Servidores/Professores via LDAP).
+ * 2. LOCAL: Contém letras/caracteres (Discentes via tabela discentes).
+ */
 class MultiLdapUserProvider implements UserProvider
 {
     public function retrieveById($identifier)
@@ -36,23 +43,38 @@ class MultiLdapUserProvider implements UserProvider
         }
     }
 
+    /**
+     * Determina a conexão baseada no formato da matrícula.
+     */
+    protected function detectConnection(string $username): string
+    {
+        // Se a matrícula for apenas dígitos, assume 'adm' (Servidor)
+        // Se houver letras (ex: 20202EX1-GR0071), assume 'local' (Discente)
+        return ctype_digit($username) ? 'adm' : 'local';
+    }
+
     public function retrieveByCredentials(array $credentials)
     {
         if (empty($credentials['username']) || empty($credentials['password'])) {
             return null;
         }
 
-        $connection = $credentials['connection'] ?? 'adm';
+        // Sobrescreve ou define a conexão baseada na regra de caracteres
+        $connection = $this->detectConnection($credentials['username']);
 
-        Log::debug('Buscando usuário LDAP', [
-            'username'   => $credentials['username'],
-            'connection' => $connection,
+        Log::debug('Conexão detectada', [
+            'username' => $credentials['username'],
+            'connection' => $connection
         ]);
 
-        $ldapUser = $this->findLdapUser($credentials['username'], $connection);
+        if ($connection === 'local') {
+            return $this->getOrCreateLocalUserFromDiscente($credentials['username']);
+        }
 
-        if (! $ldapUser) {
-            Log::debug('Usuário não encontrado no LDAP', ['connection' => $connection]);
+        $ldapUser = $this->findLdapUser($credentials['username']);
+
+        if (!$ldapUser) {
+            Log::debug('Usuário não encontrado no LDAP (ADM)', ['username' => $credentials['username']]);
             return null;
         }
 
@@ -61,97 +83,94 @@ class MultiLdapUserProvider implements UserProvider
 
     public function validateCredentials(Authenticatable $user, array $credentials)
     {
-        if (! $user instanceof LdapAuthenticatable) {
-            return false;
-        }
+        // Detecta novamente para garantir que a validação siga o fluxo correto
+        $connection = $this->detectConnection($credentials['username']);
 
-        $connection = $credentials['connection'] ?? 'adm';
-
-        // Conexão labs: valida senha pelo campo senha_responsavel na tabela discentes
-        if ($connection === 'labs') {
+        if ($connection === 'local') {
             return $this->authenticateWithLocalPassword(
                 $credentials['username'],
                 $credentials['password']
             );
         }
 
-        // Conexão adm: valida senha no LDAP normalmente
+        if (!$user instanceof LdapAuthenticatable) {
+            return false;
+        }
+
         return $this->authenticateInLdap(
             $credentials['username'],
-            $credentials['password'],
-            $connection
+            $credentials['password']
         );
     }
 
     public function rehashPasswordIfRequired(Authenticatable $user, array $credentials, bool $force = false)
     {
-        // Senhas gerenciadas pelo LDAP externamente, sem rehash local necessário
+        // Não aplicável
     }
 
-    // -------------------------------------------------------------------------
-    // Métodos internos
-    // -------------------------------------------------------------------------
+    // =========================================================================
+    // Métodos de Suporte
+    // =========================================================================
 
-    protected function findLdapUser(string $username, string $connection): mixed
+    protected function findLdapUser(string $username): mixed
     {
-        Log::info('Iniciando busca LDAP', ['username' => $username, 'connection' => $connection]);
-
-        if ($connection === 'adm') {
-            $user = AdmUser::query()
-                ->in('cn=Users,dc=adm,dc=garanhuns,dc=ifpe')
-                ->where('samaccountname', '=', $username)
-                ->first();
-        } else {
-            $user = LabsUser::query()
-                ->in('ou=Discentes,dc=labs,dc=garanhuns,dc=ifpe')
-                ->where('samaccountname', '=', $username)
-                ->first();
-        }
-
-        if ($user) {
-            Log::info('Usuário LDAP encontrado', ['dn' => $user->getDn()]);
-        }
-
-        return $user ?? null;
+        return AdmUser::query()
+            ->in('cn=Users,dc=adm,dc=garanhuns,dc=ifpe')
+            ->where('samaccountname', '=', $username)
+            ->first();
     }
 
     protected function authenticateWithLocalPassword(string $matricula, string $password): bool
     {
-        Log::info('Validando senha local para discente', ['matricula' => $matricula]);
-
         $discente = Discente::where('matricula', $matricula)->first();
 
-        if (! $discente) {
-            Log::warning('Discente não encontrado na tabela local', ['matricula' => $matricula]);
+        if (!$discente) {
+            Log::warning('Login Local: Matrícula não encontrada', ['matricula' => $matricula]);
             return false;
         }
 
-        $result = \Illuminate\Support\Facades\Hash::check($password, $discente->senha_responsavel);
+        $isValid = Hash::check($password, $discente->senha_responsavel);
 
-        Log::info('Resultado da validação local', ['sucesso' => $result]);
+        if (!$isValid) {
+            Log::warning('Login Local: Senha incorreta', ['matricula' => $matricula]);
+        }
 
-        return $result;
+        return $isValid;
     }
 
-    protected function authenticateInLdap(string $username, string $password, string $connection): bool
+    protected function authenticateInLdap(string $username, string $password): bool
     {
-        Log::info('Autenticando no LDAP', ['username' => $username, 'connection' => $connection]);
+        $ldapUser = $this->findLdapUser($username);
 
-        $ldapUser = $this->findLdapUser($username, $connection);
+        if (!$ldapUser) return false;
 
-        if (! $ldapUser) {
-            Log::warning('Usuário LDAP não encontrado na validação de credenciais');
-            return false;
-        }
-
-        $result = $ldapUser->getConnection()->auth()->attempt(
+        return $ldapUser->getConnection()->auth()->attempt(
             $ldapUser->getDn(),
             $password
         );
+    }
 
-        Log::info('Resultado da autenticação LDAP', ['sucesso' => $result]);
+    protected function getOrCreateLocalUserFromDiscente(string $matricula): ?User
+    {
+        $discente = Discente::where('matricula', $matricula)->first();
 
-        return $result;
+        if (!$discente) return null;
+
+        $user = User::where('username', $matricula)->first();
+
+        if ($user) {
+            if ($user->name !== $discente->nome) {
+                $user->name = $discente->nome;
+                $user->save();
+            }
+            return $user;
+        }
+
+        return User::create([
+            'name'     => $discente->nome,
+            'username' => $matricula,
+            'password' => bcrypt(Str::random(16)),
+        ]);
     }
 
     protected function getOrCreateLocalUser($ldapUser, array $credentials): User
@@ -168,18 +187,12 @@ class MultiLdapUserProvider implements UserProvider
             return $user;
         }
 
-        Log::info('Criando novo usuário local', ['username' => $username]);
-
-        $user = User::create([
+        return User::create([
             'name'     => $ldapUser->getFirstAttribute('description') ?? $username,
             'email'    => $email,
             'username' => $username,
             'password' => bcrypt(Str::random(16)),
         ]);
-
-        Log::info('Novo usuário criado', ['id' => $user->id]);
-
-        return $user;
     }
 
     protected function syncUserAttributes(User $user, $ldapUser, string $email, string $username): void
@@ -193,7 +206,6 @@ class MultiLdapUserProvider implements UserProvider
 
         if ($updated) {
             $user->save();
-            Log::info('Dados do usuário sincronizados', ['id' => $user->id]);
         }
     }
 }

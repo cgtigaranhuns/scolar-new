@@ -31,6 +31,8 @@ class DiscentesConselhoRelationManager extends RelationManager
 {
     protected static string $relationship = 'discentesConselho';
 
+    protected static ?string $title = 'Estudantes do Conselho';
+
     public function form(Schema $schema): Schema
     {
         
@@ -278,6 +280,7 @@ class DiscentesConselhoRelationManager extends RelationManager
             ->recordTitleAttribute('conselho_id')
             ->columns([
                 TextColumn::make('discente.nome')
+                    ->label('Nome')
                     ->searchable(),
                 TextColumn::make('discente.matricula')
                     ->label('Matrícula')
@@ -296,10 +299,10 @@ class DiscentesConselhoRelationManager extends RelationManager
                 //
             ])
             ->headerActions([
-                CreateAction::make(),
-                AssociateAction::make(),
+              //  CreateAction::make(),
+               // AssociateAction::make(),
                 CreateAction::make('discentes-da-turma')
-                    ->label('Adicionar Discente da Turma')
+                    ->label('Adicionar Estudantes por Turma')
                     ->modalHeading('Adicionar todos os discentes da turma')
                     ->icon('heroicon-o-user-group')
                     ->form([
@@ -330,12 +333,12 @@ class DiscentesConselhoRelationManager extends RelationManager
             ])
             ->recordActions([
                 EditAction::make(),
-                DissociateAction::make(),
+               // DissociateAction::make(),
                 DeleteAction::make(),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
-                    DissociateBulkAction::make(),
+                  //  DissociateBulkAction::make(),
                     DeleteBulkAction::make(),
                 ]),
             ]);

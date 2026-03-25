@@ -18,6 +18,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use GuzzleHttp\Psr7\UploadedFile;
 use Illuminate\Support\Facades\Hash;
@@ -26,7 +27,11 @@ class DiscenteResource extends Resource
 {
     protected static ?string $model = Discente::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-users';
+    protected static ?string $label = 'Estudantes';
+    protected static ?string $navigationLabel = 'Estudantes';
+    protected static string|\UnitEnum|null $navigationGroup = 'Cadastros';
+
 
     public static function form(Schema $schema): Schema
     {
@@ -96,7 +101,11 @@ class DiscenteResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
+                SelectFilter::make('turma')
+                    ->label('Turma')
+                    ->relationship('turmaRelacionada', 'nome')
+                    ->searchable()
+                    ->preload(),
             ])
             ->recordActions([
                 EditAction::make(),
