@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Conselhos\Tables;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Tables\Columns\SelectColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
@@ -15,29 +16,48 @@ class ConselhosTable
         return $table
             ->columns([
                 TextColumn::make('descricao')
-                    ->searchable(),
-                TextColumn::make('turma_id')
-                    ->numeric()
-                    ->sortable(),
+                    ->label('Conselho')
+                   ->limit(70)
+                    ->tooltip(function (TextColumn $column): ?string {
+                        $state = $column->getState();
+
+                        if (strlen($state) <= $column->getCharacterLimit()) {
+                            return null;
+                        }
+
+                        // Only render the tooltip if the column content exceeds the length limit.
+                        return $state;
+                    })
+                    ->sortable(),                
                 TextColumn::make('data_inicio')
-                    ->date()
+                    ->label('Data de Início')
+                    ->date('d/m/Y')
                     ->sortable(),
                 TextColumn::make('data_fim')
-                    ->date()
+                    ->label('Data de Fim')
+                    ->date('d/m/Y')
                     ->sortable(),
-                TextColumn::make('unidade')
-                    ->searchable(),
-                TextColumn::make('professor01_id')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('professor02_id')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('professor03_id')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('professor04_id')
-                    ->numeric()
+               SelectColumn::make('status')
+                    ->alignCenter()
+                    ->options([
+                        'Agendado' => 'Agendado',
+                        'Liberado' => 'Liberado',
+                        'Concluído' => 'Concluído',
+                        'Cancelado' => 'Cancelado'
+                    ])
+                    // ->icon(fn($state) => match ($state) {
+                    //     'Agendado' => 'heroicon-o-calendar',
+                    //     'Em andamento' => 'heroicon-o-clock',
+                    //     'Concluído' => 'heroicon-o-check',
+                    //     'Cancelado' => 'heroicon-o-x',
+                    //     default => null,
+                    // })
+                    // ->colors([
+                    //     'Agendado' => 'primary',
+                    //     'Liberado' => 'success',
+                    //     'Concluído' => 'warning',
+                    //     'Cancelado' => 'danger',
+                    // ])
                     ->sortable(),
                 TextColumn::make('created_at')
                     ->dateTime()

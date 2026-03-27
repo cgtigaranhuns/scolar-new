@@ -33,6 +33,8 @@ class LancarNotasConselho extends Page
     protected static string|\UnitEnum|null $navigationGroup = 'Conselhos de Classe';
 
     public array $data = [];
+    public bool $showSaveButton = false;
+    public bool $finalizada = false;
 
     // Prefixo da área do professor logado (a1, a2, a3 ou a4)
     public string $areaPrefix = 'a1';
@@ -88,8 +90,16 @@ class LancarNotasConselho extends Page
                             ->afterStateUpdated(function (Get $get, Set $set, $state) use ($prefix) {
                                 if (! $state) {
                                     $set('lista_alunos', []);
+                                    $this->showSaveButton = false;
                                     return;
                                 }
+
+                                $statusField = "status_avaliacao_{$prefix}";
+                                $isFinalized = DiscentesConselho::where('conselho_id', $state)
+                                    ->where($statusField, 'Finalizado')
+                                    ->exists();
+                                $this->finalizada = $isFinalized;
+                                
 
                                 $discentes = DiscentesConselho::where('conselho_id', $state)
                                     ->with('discente')
@@ -115,6 +125,8 @@ class LancarNotasConselho extends Page
                                         'info_complementares' => $item->{"info_{$prefix}_complementares"},
                                     ];
                                 })->toArray());
+
+                                $this->showSaveButton = $discentes->isNotEmpty();
                             }),
                     ]),
 
@@ -162,47 +174,56 @@ class LancarNotasConselho extends Page
                                                     ->label('Participação')
                                                     ->options(['A' => 'A', 'B' => 'B', 'C' => 'C'])
                                                     ->inline()
+                                                    ->disabled(fn(Get $get) => $get('status_avaliacao_' . $prefix) === 'Finalizado')
                                                     ->columnSpan(1),
                                                 ToggleButtons::make('nt_interesse')
                                                     ->label('Interesse')
                                                     ->options(['A' => 'A', 'B' => 'B', 'C' => 'C'])
                                                     ->inline()
+                                                    ->disabled(fn(Get $get) => $get('status_avaliacao_' . $prefix) === 'Finalizado')
                                                     ->columnSpan(1),
                                                 ToggleButtons::make('nt_organizacao')
                                                     ->label('Organização')
                                                     ->options(['A' => 'A', 'B' => 'B', 'C' => 'C'])
                                                     ->inline()
+                                                    ->disabled(fn(Get $get) => $get('status_avaliacao_' . $prefix) === 'Finalizado')
                                                     ->columnSpan(1),
                                                 ToggleButtons::make('nt_comprometimento')
                                                     ->label('Comprometimento')
                                                     ->options(['A' => 'A', 'B' => 'B', 'C' => 'C'])
                                                     ->inline()
+                                                    ->disabled(fn(Get $get) => $get('status_avaliacao_' . $prefix) === 'Finalizado')
                                                     ->columnSpan(1),
                                                 ToggleButtons::make('nt_disciplina')
                                                     ->label('Disciplina')
                                                     ->options(['A' => 'A', 'B' => 'B', 'C' => 'C'])
                                                     ->inline()
+                                                    ->disabled(fn(Get $get) => $get('status_avaliacao_' . $prefix) === 'Finalizado')
                                                     ->columnSpan(1),
                                                 ToggleButtons::make('nt_cooperacao')
                                                     ->label('Cooperação')
                                                     ->options(['A' => 'A', 'B' => 'B', 'C' => 'C'])
                                                     ->inline()
+                                                    ->disabled(fn(Get $get) => $get('status_avaliacao_' . $prefix) === 'Finalizado')
                                                     ->columnSpan(1),
                                             ]),
 
                                         Section::make('Observações')
                                             ->components([
                                                 Textarea::make('obs_gestao')
-                                                    ->label('Observação Gestão')
+                                                    ->label('Observação para Gestão')
                                                     ->autosize()
+                                                    ->disabled(fn(Get $get) => $get('status_avaliacao_' . $prefix) === 'Finalizado')
                                                     ->columnSpan(3),
                                                 Textarea::make('obs_pais')
-                                                    ->label('Observação Pais')
+                                                    ->label('Observação para os Pais')
                                                     ->autosize()
+                                                    ->disabled(fn(Get $get) => $get('status_avaliacao_' . $prefix) === 'Finalizado')
                                                     ->columnSpan(3),
                                                 Textarea::make('info_complementares')
                                                     ->label('Informações Complementares')
                                                     ->autosize()
+                                                    ->disabled(fn(Get $get) => $get('status_avaliacao_' . $prefix) === 'Finalizado')
                                                     ->columnSpan(3),
                                             ])
                                             ->columns(3),
@@ -221,24 +242,21 @@ class LancarNotasConselho extends Page
             ->statePath('data');
     }
 
-    protected function getHeaderActions(): array
-    {
-        return [
-            Action::make('salvar')
-                ->label('Salvar Alterações')
-                ->color('primary')
-                ->action('save'),
-        ];
-    }
-    protected function getFooterActions(): array
-    {
-        return [
-            Action::make('salvar')
-                ->label('Finalizar Lançamento')
-                ->color('primary')
-                ->action('save'),
-        ];
-    }
+    // protected function getHeaderActions(): array
+    // {
+    //     return [
+    //         Action::make('salvar')
+    //             ->label('Salvar Alterações')
+    //             ->color('primary')
+    //             ->action('save')
+    //             ->visible(fn () => filled($this->data['lista_alunos'] ?? [])),
+    //         Action::make('finalizar')
+    //             ->label('Finalizar Lançamento')
+    //             ->color('primary')
+    //             ->action('save'),
+    //     ];
+    // }
+    
 
     public function save(): void
     {
@@ -281,7 +299,85 @@ class LancarNotasConselho extends Page
         });
 
         Notification::make()
-            ->title('Notas salvas com sucesso!')
+            ->title('Salvo com sucesso!')
+            ->success()
+            ->send();
+    }
+
+    public function finalize(): void
+    {
+       
+        $formData = $this->data;
+        $prefix   = $this->areaPrefix;
+
+        if (empty($formData['lista_alunos']) || ! is_array($formData['lista_alunos'])) {
+            Notification::make()
+                ->title('Sem dados para finalizar.')
+                ->warning()
+                ->send();
+            return;
+        }
+
+        $requiredFields = [
+            'nt_participacao',
+            'nt_interesse',
+            'nt_organizacao',
+            'nt_comprometimento',
+            'nt_disciplina',
+            'nt_cooperacao',
+        ];
+
+        $incompletos = [];
+
+        foreach ($formData['lista_alunos'] as $item) {
+            if (empty($item['id'])) {
+                continue;
+            }
+
+            foreach ($requiredFields as $field) {
+                $value = $item[$field] ?? null;
+
+                if ($value === null || (is_string($value) && trim($value) === '')) {
+                    $incompletos[] = $item['nome'] ?? 'Aluno sem nome';
+                    break;
+                }
+            }
+        }
+
+        if (! empty($incompletos)) {
+            $lista = implode(', ', array_unique($incompletos));
+
+            Notification::make()
+                ->title('Não foi possível finalizar — campos pendentes')
+                ->body('Preencha todas os conceitos antes de finalizar')
+                ->persistent()
+                ->warning()
+                ->send();
+
+            return;
+        }
+        $this->save(); // Salva antes de finalizar para garantir que as últimas alterações sejam persistidas
+        DB::transaction(function () use ($formData, $prefix) {
+            foreach ($formData['lista_alunos'] as $item) {
+                if (empty($item['id'])) {
+                    continue;
+                }
+
+                $registro = DiscentesConselho::find($item['id']);
+
+                if (! $registro) {
+                    continue;
+                }
+
+                $registro->update([
+                    "status_avaliacao_{$prefix}" => 'Finalizado',
+                    "data_avaliacao_{$prefix}"   => now(),
+                ]);
+            }
+        });
+
+        Notification::make()
+            ->title('Lançamento finalizado com sucesso!')
             ->success()
             ->send();
     }

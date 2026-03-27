@@ -301,34 +301,34 @@ class DiscentesConselhoRelationManager extends RelationManager
             ->headerActions([
               //  CreateAction::make(),
                // AssociateAction::make(),
-                CreateAction::make('discentes-da-turma')
-                    ->label('Adicionar Estudantes por Turma')
-                    ->modalHeading('Adicionar todos os discentes da turma')
-                    ->icon('heroicon-o-user-group')
-                    ->form([
-                        Select::make('turma_id')
-                            ->label('Turma')
-                            ->options(Turma::query()->orderBy('nome')->pluck('nome', 'id'))
-                            ->searchable()
-                            ->required(),
-                    ])
-                    ->mutateFormDataUsing(function ($data) {
-                        return $data;
-                    })
-                    ->action(function ($livewire, array $data) {
-                        $turma = Turma::find($data['turma_id']);
-                        if (! $turma) {
-                            return;
-                        }
+                // CreateAction::make('discentes-da-turma')
+                //     ->label('Adicionar Estudantes por Turma')
+                //     ->modalHeading('Adicionar todos os discentes da turma')
+                //     ->icon('heroicon-o-user-group')
+                //     ->form([
+                //         Select::make('turma_id')
+                //             ->label('Turma')
+                //             ->options(Turma::query()->orderBy('nome')->pluck('nome', 'id'))
+                //             ->searchable()
+                //             ->required(),
+                //     ])
+                //     ->mutateFormDataUsing(function ($data) {
+                //         return $data;
+                //     })
+                //     ->action(function ($livewire, array $data) {
+                //         $turma = Turma::find($data['turma_id']);
+                //         if (! $turma) {
+                //             return;
+                //         }
 
-                        $discentes = $turma->discentes;
+                //         $discentes = $turma->discentes;
 
-                        foreach ($discentes as $discente) {
-                            $livewire->ownerRecord->discentesConselho()->firstOrCreate([
-                                'discente_id' => $discente->id,
-                            ]);
-                        }
-                    }),
+                //         foreach ($discentes as $discente) {
+                //             $livewire->ownerRecord->discentesConselho()->firstOrCreate([
+                //                 'discente_id' => $discente->id,
+                //             ]);
+                //         }
+                //     }),
 
             ])
             ->recordActions([

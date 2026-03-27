@@ -13,15 +13,22 @@ class CreateConselho extends CreateRecord
 
     protected function afterCreate(): void
     {
-        $turmaId = $this->record->turma_id;
+        if ($this->record->unidade === '1ª Unidade' or $this->record->unidade === '3ª Unidade') {
 
-        Discente::where('turma', $turmaId)
-            ->get()
-            ->each(function ($discente) {
-                DiscentesConselho::create([
+            $turmaCodigo = $this->record->turma?->codigo;
+
+            if (! $turmaCodigo) {
+                return;
+            }
+
+            $discentes = Discente::where('turma', $turmaCodigo)->pluck('id');
+
+            DiscentesConselho::insert(
+                $discentes->map(fn($id) => [
                     'conselho_id' => $this->record->id,
-                    'discente_id' => $discente->id,
-                ]);
-            });
+                    'discente_id' => $id,
+                ])->toArray()
+            );
+        }
     }
 }
