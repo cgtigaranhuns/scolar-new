@@ -95,6 +95,21 @@ class SyncIfpeStudents extends Command
                 // Ignora alunos que não estão com status "Matriculado"
                 if (trim($student['enrollmentStatus'] ?? '') !== 'Matriculado') continue;
 
+                // Importa apenas alunos cuja matrícula contenha os prefixos permitidos:
+                // E12 (ex: E121234), D12 (ex: D121234) ou F2 (ex: F21234)
+                $matricula        = $student['enrollment'] ?? '';
+                $prefixosPermitidos = ['E12', 'D12', 'F2'];
+                $prefixoValido    = false;
+
+                foreach ($prefixosPermitidos as $prefixo) {
+                    if (str_contains($matricula, $prefixo)) {
+                        $prefixoValido = true;
+                        break;
+                    }
+                }
+
+                if (!$prefixoValido) continue;
+
                 try {
                     // Garante que a turma existe no banco e obtém seu código único
                     $codigoTurma = $this->syncTurma($student);

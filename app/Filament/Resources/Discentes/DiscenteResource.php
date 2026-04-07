@@ -15,12 +15,14 @@ use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Image;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
+use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
-use GuzzleHttp\Psr7\UploadedFile;
 use Illuminate\Support\Facades\Hash;
 
 class DiscenteResource extends Resource
@@ -65,6 +67,12 @@ class DiscenteResource extends Resource
                 FileUpload::make('foto')
                     ->disk('public')
                     ->directory('fotos')
+                    // Gerar o nome do arquivo com o número de matrícula
+                    ->getUploadedFileNameForStorageUsing(function (Get $get) {
+                        $matricula = $get('matricula');
+                        $extension = pathinfo($get('foto')->getClientOriginalName(), PATHINFO_EXTENSION);
+                        return $matricula . '.' . $extension;
+                    })
                     ->visibility('public')
                     ->label('Foto'),
                 TextInput::make('informacoes_adicionais'),
@@ -81,9 +89,13 @@ class DiscenteResource extends Resource
     {
         return $table
             ->columns([
+                
                 TextColumn::make('nome')
                     ->sortable()
                     ->searchable(),
+                ImageColumn::make('foto')  
+                    ->disk('public')                                     
+                    ->circular(),
                 TextColumn::make('matricula')
                     ->searchable(),
                 TextColumn::make('turmaRelacionada.nome')
