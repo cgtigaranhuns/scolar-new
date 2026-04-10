@@ -3,11 +3,14 @@
 namespace App\Filament\Resources\Conselhos\Tables;
 
 use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\SelectColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Spatie\FlareClient\View;
 
 class ConselhosTable
 {
@@ -72,11 +75,19 @@ class ConselhosTable
                 //
             ])
             ->recordActions([
-                EditAction::make(),
+                EditAction::make()
+                    ->label('')
+                    ->tooltip('Editar'),
+                DeleteAction::make()
+                    ->label('')
+                    ->tooltip('Excluir'),
+                ViewAction::make()
+                    ->label('')
+                    ->tooltip('Visualizar'),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
-                    DeleteBulkAction::make(),
+                  //  DeleteBulkAction::make(),
                 ]),
             ]);
     }

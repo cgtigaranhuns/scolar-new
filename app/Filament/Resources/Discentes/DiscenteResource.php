@@ -13,6 +13,7 @@ use Filament\Actions\EditAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Image;
@@ -22,6 +23,7 @@ use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Hash;
 
@@ -64,6 +66,12 @@ class DiscenteResource extends Resource
                 TextInput::make('status_qa')
                     ->label('Status - Q-Academico')
                     ->required(),
+                 TextInput::make('senha_responsavel')
+                    ->label('Senha do Responsável')
+                    ->password()
+                    ->dehydrateStateUsing(fn($state) => Hash::make($state))
+                    ->dehydrated(fn($state) => filled($state))
+                    ->required(fn(string $context): bool => $context === 'create'),
                 FileUpload::make('foto')
                     ->disk('public')
                     ->directory('fotos')
@@ -74,14 +82,11 @@ class DiscenteResource extends Resource
                         return $matricula . '.' . $extension;
                     })
                     ->visibility('public')
-                    ->label('Foto'),
-                TextInput::make('informacoes_adicionais'),
-                 TextInput::make('senha_responsavel')
-                    ->label('Senha do Responsável')
-                    ->password()
-                    ->dehydrateStateUsing(fn ($state) => Hash::make($state))
-                    ->dehydrated(fn ($state) => filled($state))
-                    ->required(fn (string $context): bool => $context === 'create'),
+                    ->label('Foto'),                
+               
+                Textarea::make('informacoes_adicionais')
+                    ->label('Informações Adicionais')
+                    ->autosize(),
             ]);
     }
 
@@ -89,19 +94,20 @@ class DiscenteResource extends Resource
     {
         return $table
             ->columns([
-                
+
                 TextColumn::make('nome')
                     ->sortable()
                     ->searchable(),
-                ImageColumn::make('foto')  
-                    ->disk('public')                                     
+                ImageColumn::make('foto')
+                    ->disk('public')
                     ->circular(),
                 TextColumn::make('matricula')
                     ->searchable(),
                 TextColumn::make('turmaRelacionada.nome')
                     ->searchable(),
                 TextColumn::make('status_qa')
-                    ->label('Status - Q-Academico')
+                    ->label('Status Q-Academico')
+                    ->alignCenter()
                     ->searchable(),
                 TextColumn::make('created_at')
                     ->dateTime()
@@ -118,14 +124,22 @@ class DiscenteResource extends Resource
                     ->relationship('turmaRelacionada', 'nome')
                     ->searchable()
                     ->preload(),
+                TernaryFilter::make('informacoes_adicionais')
+                    ->label('Possui Informações Adicionais')
+                    ->placeholder('Todos os estudantes')
+                    ->nullable(),
             ])
             ->recordActions([
-                EditAction::make(),
-                DeleteAction::make(),
+                EditAction::make()
+                    ->label('')
+                    ->tooltip('Editar'),
+                DeleteAction::make()
+                    ->label('')
+                    ->tooltip('Excluir'),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
-                    DeleteBulkAction::make(),
+                  //  DeleteBulkAction::make(),
                 ]),
             ]);
     }

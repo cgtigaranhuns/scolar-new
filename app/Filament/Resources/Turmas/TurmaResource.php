@@ -24,8 +24,8 @@ class TurmaResource extends Resource
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-s-view-columns';
     protected static ?string $label = 'Turmas';
     protected static ?string $navigationLabel = 'Turmas';
-    protected static string|\UnitEnum|null $navigationGroup = 'Cadastros';  
-    
+    protected static string|\UnitEnum|null $navigationGroup = 'Cadastros';
+
 
     public static function form(Schema $schema): Schema
     {
@@ -52,18 +52,23 @@ class TurmaResource extends Resource
                     ->searchable(),
                 TextColumn::make('codigo')
                     ->label('Código')
+                    ->toggleable(isToggledHiddenByDefault: true)
                     ->searchable(),
             ])
             ->filters([
                 //
             ])
             ->recordActions([
-                EditAction::make(),
-                DeleteAction::make(),
+                EditAction::make()
+                    ->label('')
+                    ->tooltip('Editar'),
+                DeleteAction::make()
+                    ->label('')
+                    ->tooltip('Excluir'),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
-                    DeleteBulkAction::make(),
+                  //  DeleteBulkAction::make(),
                 ]),
             ]);
     }

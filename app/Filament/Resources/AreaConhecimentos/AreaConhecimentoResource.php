@@ -26,6 +26,7 @@ class AreaConhecimentoResource extends Resource
     protected static string|\UnitEnum|null $navigationGroup = 'Cadastros';
     
     
+    
 
 
     public static function form(Schema $schema): Schema
@@ -59,8 +60,12 @@ class AreaConhecimentoResource extends Resource
                 //
             ])
             ->recordActions([
-                EditAction::make(),
-                DeleteAction::make(),
+                EditAction::make()
+                    ->label('')
+                    ->tooltip('Editar'),
+                DeleteAction::make()
+                    ->label('')
+                    ->tooltip('Excluir'),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

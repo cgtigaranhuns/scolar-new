@@ -88,12 +88,16 @@ class ProfessorResource extends Resource
                     ->preload(),
             ])
             ->recordActions([
-                EditAction::make(),
-                DeleteAction::make(),
+                EditAction::make()
+                    ->label('')
+                    ->tooltip('Editar'),
+                DeleteAction::make()
+                    ->label('')
+                    ->tooltip('Excluir'),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
-                    DeleteBulkAction::make(),
+                   // DeleteBulkAction::make(),
                 ]),
             ]);
     }

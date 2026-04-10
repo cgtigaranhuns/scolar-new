@@ -240,22 +240,7 @@ class LancarNotasConselho extends Page
                     ]),
             ])
             ->statePath('data');
-    }
-
-    // protected function getHeaderActions(): array
-    // {
-    //     return [
-    //         Action::make('salvar')
-    //             ->label('Salvar Alterações')
-    //             ->color('primary')
-    //             ->action('save')
-    //             ->visible(fn () => filled($this->data['lista_alunos'] ?? [])),
-    //         Action::make('finalizar')
-    //             ->label('Finalizar Lançamento')
-    //             ->color('primary')
-    //             ->action('save'),
-    //     ];
-    // }
+    }   
     
 
     public function save(): void
@@ -348,10 +333,10 @@ class LancarNotasConselho extends Page
             $lista = implode(', ', array_unique($incompletos));
 
             Notification::make()
-                ->title('Não foi possível finalizar — campos pendentes')
-                ->body('Preencha todas os conceitos antes de finalizar')
+                ->title('ATENÇÃO: Não foi possível finalizar, existem campos pendentes')
+                ->body('Preencha todos os conceitos antes de finalizar')
                 ->persistent()
-                ->warning()
+                ->danger()
                 ->send();
 
             return;

@@ -13,7 +13,10 @@ class ManageDiscentes extends ManageRecords
     protected function getHeaderActions(): array
     {
         return [
-            CreateAction::make(),
+            CreateAction::make()
+                ->label('Adicionar Estudante')
+                ->icon('heroicon-o-plus')
+                ->modalHeading('Adicionar Estudante'),
         ];
     }
 }

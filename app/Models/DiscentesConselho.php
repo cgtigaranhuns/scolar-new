@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class DiscentesConselho extends Model
 {
+    
+
     protected $fillable = [
         'conselho_id',
         'discente_id',
@@ -70,4 +72,5 @@ class DiscentesConselho extends Model
     {
         return $this->belongsTo(Turma::class);
     }
+    
 }

@@ -28,9 +28,11 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path('admin')
+            ->unsavedChangesAlerts()
             ->login(Login::class)
             ->colors([
-                'primary' => Color::Amber,
+                'primary' => '#3CB371',
+                // 'primary' => Color::Amber,
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
@@ -55,6 +57,9 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
+            ])
+            ->resources([
+                config('filament-logger.activity_resource'),
             ]);
     }
 }

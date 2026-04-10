@@ -4,8 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
+
 class Turma extends Model
 {
+    
+
     protected $fillable = [
         'nome',
         'codigo',
@@ -26,4 +29,6 @@ class Turma extends Model
     {
         return $this->belongsToMany(Professor::class, 'professor_turma');
     }
+
+    
 }

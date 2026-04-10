@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Discente extends Model
 {
+    
+
     protected $fillable = [
         'nome',
         'email_discente',
@@ -29,4 +31,7 @@ class Discente extends Model
     {
         return $this->hasMany(DiscentesConselho::class);
     }
+
+    
+
 }

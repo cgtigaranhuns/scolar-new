@@ -41,26 +41,24 @@ class UploadFotos extends Page implements HasForms, HasTable
             TextEntry::make('instructions')
                 ->label('Envie as fotos dos estudantes e garanta que os nomes dos arquivos correspondam às matrículas dos alunos (ex: 20210001.jpg).')
                 ->helperText('Dica: Se os arquivos não tiverem o nome correto, eles não serão associados aos estudantes.'),
-             
-               
-            
+
+
+
 
             Forms\Components\FileUpload::make('fotos')
                 ->label('Carregue as fotos')
                 ->helperText('Envie diversos arquivos. Os nomes das fotos serão preservados. Limite de 50 arquivos por vez, cada um com no máximo 512 KB. Formatos permitidos: JPG, PNG')
-                
-
-                ->image()
                 ->multiple()
+                ->acceptedFileTypes(['image/jpeg', 'image/png'])
                 ->preserveFilenames()
-                ->maxSize(512) // 512 KB
+                ->maxSize(512)
                 ->disk('public')
                 ->directory('fotos')
                 ->visibility('public')
                 ->required()
                 ->maxFiles(50)
-                ->panelLayout('grid'),
-               // ->columnSpanFull(false),
+                ->previewable(false)
+                ->panelLayout('list'), // <- alterado de 'grid' para 'list'    // 6 colunas no grid
         ];
     }
 

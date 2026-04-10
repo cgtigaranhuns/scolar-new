@@ -6,6 +6,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class Professor extends Model
 {
+
+   
+
     protected $fillable = [
         'nome',
         'email',
@@ -22,4 +25,5 @@ class Professor extends Model
     {
         return $this->belongsToMany(Turma::class, 'professor_turma');
     }
+    
 }

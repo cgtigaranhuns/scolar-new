@@ -5,7 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 
 class Conselho extends Model
-{
+{   
+    protected $with = ['discentesConselho.discente', 'professor01', 'professor02', 'professor03', 'professor04', 'turma'];
+
     protected $fillable = [
         'descricao',
         'turma_id',
@@ -48,4 +50,6 @@ class Conselho extends Model
     {
         return $this->hasMany(DiscentesConselho::class);
     }
+
+    
 }

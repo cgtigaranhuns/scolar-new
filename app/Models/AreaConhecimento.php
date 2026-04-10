@@ -4,8 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
+
 class AreaConhecimento extends Model
 {
+    
+
     protected $fillable = [
         'nome',
     ];
@@ -14,4 +17,6 @@ class AreaConhecimento extends Model
     {
         return $this->hasMany(Professor::class);
     }
+
+    
 }

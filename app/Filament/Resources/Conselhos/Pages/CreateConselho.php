@@ -11,6 +11,11 @@ class CreateConselho extends CreateRecord
 {
     protected static string $resource = ConselhoResource::class;
 
+    public function canCreateAnother(): bool
+    {
+        return false; // 👈 remove o botão "Criar Outro"
+    }
+
     protected function afterCreate(): void
     {
         if ($this->record->unidade === '1ª Unidade' or $this->record->unidade === '3ª Unidade') {
