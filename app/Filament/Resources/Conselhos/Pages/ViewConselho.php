@@ -4,6 +4,8 @@ namespace App\Filament\Resources\Conselhos\Pages;
 
 use App\Filament\Resources\Conselhos\ConselhoResource;
 use App\Models\AreaConhecimento;
+use App\Models\Discente;
+use App\Models\DiscentesConselho;
 use App\Models\Professor;
 use Filament\Actions\EditAction;
 use Filament\Infolists\Components\ImageEntry;
@@ -20,17 +22,17 @@ class ViewConselho extends ViewRecord
 {
     protected static string $resource = ConselhoResource::class;
 
-    protected function getHeaderActions(): array
-    {
-        return [
-            EditAction::make(),
-        ];
-    }
+    // protected function getHeaderActions(): array
+    // {
+    //     return [
+    //         EditAction::make(),
+    //     ];
+    // }
 
     public function infolist(Schema $schema): Schema
     {
         // Cor dos conceitos A/B/C
-        $conceitoCor = fn ($state) => match ($state) {
+        $conceitoCor = fn($state) => match ($state) {
             'A' => 'success',
             'B' => 'warning',
             'C' => 'danger',
@@ -38,7 +40,7 @@ class ViewConselho extends ViewRecord
         };
 
         // Cor do status de avaliação
-        $statusCor = fn ($state) => match ($state) {
+        $statusCor = fn($state) => match ($state) {
             'Finalizado' => 'success',
             default      => 'warning',
         };
@@ -132,7 +134,7 @@ class ViewConselho extends ViewRecord
 
                             TextEntry::make("data_avaliacao_{$prefix}")
                                 ->label('Data de Avaliação')
-                                ->dateTime('d/m/Y H:i')
+                                ->dateTime('d/m/Y')
                                 ->placeholder('—'),
                         ]),
                 ]);
@@ -161,7 +163,7 @@ class ViewConselho extends ViewRecord
                         TextEntry::make('status')
                             ->label('Status')
                             ->badge()
-                            ->color(fn (string $state): string => match ($state) {
+                            ->color(fn(string $state): string => match ($state) {
                                 'Liberado'   => 'success',
                                 'Finalizado' => 'info',
                                 'Bloqueado'  => 'danger',
@@ -184,19 +186,43 @@ class ViewConselho extends ViewRecord
                     ->columns(1)
                     ->schema([
                         TextEntry::make('professor01.nome')
-                            ->label(AreaConhecimento::find(Professor::find($this->record->professor01_id)?->area_conhecimento_id)?->nome.':')
+                            ->label(AreaConhecimento::find(Professor::find($this->record->professor01_id)?->area_conhecimento_id)?->nome . ': '.
+                                DiscentesConselho::where('status_avaliacao_a1', 'Finalizado')->first()?->status_avaliacao_a1 ?? 'Pendente')
+                            ->badge()
+                            ->color(function () {
+                                $status = DiscentesConselho::where('status_avaliacao_a1', 'Finalizado')->first()?->status_avaliacao_a1 ?? null;                           
+                                return $status === 'Finalizado' ? 'success' : 'danger';
+                            })
                             ->placeholder('—'),
 
                         TextEntry::make('professor02.nome')
-                            ->label(AreaConhecimento::find(Professor::find($this->record->professor02_id)?->area_conhecimento_id)?->nome.':')
+                            ->label(AreaConhecimento::find(Professor::find($this->record->professor02_id)?->area_conhecimento_id)?->nome . ': ' .
+                                DiscentesConselho::where('status_avaliacao_a2', 'Finalizado')->first()?->status_avaliacao_a2 ?? 'Pendente')
+                           ->badge()
+                            ->color(function () {
+                                $status = DiscentesConselho::where('status_avaliacao_a2', 'Finalizado')->first()?->status_avaliacao_a2 ?? null;
+                                return $status === 'Finalizado' ? 'success' : 'danger';
+                            })
                             ->placeholder('—'),
 
                         TextEntry::make('professor03.nome')
-                            ->label(AreaConhecimento::find(Professor::find($this->record->professor03_id)?->area_conhecimento_id)?->nome.':')
+                            ->label(AreaConhecimento::find(Professor::find($this->record->professor03_id)?->area_conhecimento_id)?->nome . ': ' .
+                                DiscentesConselho::where('status_avaliacao_a3', 'Finalizado')->first()?->status_avaliacao_a3 ?? 'Pendente')
+                            ->badge()
+                            ->color(function () {
+                                $status = DiscentesConselho::where('status_avaliacao_a3', 'Finalizado')->first()?->status_avaliacao_a3 ?? null;
+                                return $status === 'Finalizado' ? 'success' : 'danger';
+                            })
                             ->placeholder('—'),
 
                         TextEntry::make('professor04.nome')
-                            ->label(AreaConhecimento::find(Professor::find($this->record->professor04_id)?->area_conhecimento_id)?->nome.':')
+                            ->label(AreaConhecimento::find(Professor::find($this->record->professor04_id)?->area_conhecimento_id)?->nome . ': ' .
+                                DiscentesConselho::where('status_avaliacao_a4', 'Finalizado')->first()?->status_avaliacao_a4 ?? 'Pendente')
+                            ->badge()
+                            ->color(function () {
+                                $status = DiscentesConselho::where('status_avaliacao_a4', 'Finalizado')->first()?->status_avaliacao_a4 ?? null;
+                                return $status === 'Finalizado' ? 'success' : 'danger';
+                            })
                             ->placeholder('—'),
                     ]),
 
@@ -231,9 +257,9 @@ class ViewConselho extends ViewRecord
                                             ->columnSpan(2),
 
                                         TextEntry::make('status_geral_avaliacoes')
-                                            ->label('Status Geral')
+                                            ->label('Status Geral Conselho')
                                             ->badge()
-                                            ->color(fn ($state) => match ($state) {
+                                            ->color(fn($state) => match ($state) {
                                                 'Finalizado' => 'success',
                                                 default      => 'warning',
                                             })

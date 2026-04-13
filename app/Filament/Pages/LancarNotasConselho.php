@@ -289,6 +289,29 @@ class LancarNotasConselho extends Page
             ->send();
     }
 
+    public function finalizaConselho(): void
+    {
+        $avaliacao_a1_finalizada = DiscentesConselho::where('conselho_id', $this->data['conselho_id'])
+            ->where('status_avaliacao_a1', 'Finalizado')
+            ->exists();
+        $avaliacao_a2_finalizada = DiscentesConselho::where('conselho_id', $this->data['conselho_id'])
+            ->where('status_avaliacao_a2', 'Finalizado')
+            ->exists();
+        $avaliacao_a3_finalizada = DiscentesConselho::where('conselho_id', $this->data['conselho_id'])
+            ->where('status_avaliacao_a3', 'Finalizado')
+            ->exists();
+        $avaliacao_a4_finalizada = DiscentesConselho::where('conselho_id', $this->data['conselho_id'])
+            ->where('status_avaliacao_a4', 'Finalizado')
+            ->exists();
+
+        if ($avaliacao_a1_finalizada && $avaliacao_a2_finalizada && $avaliacao_a3_finalizada && $avaliacao_a4_finalizada) {
+            DiscentesConselho::where('conselho_id', $this->data['conselho_id'])->update([
+                'status_geral_avaliacoes' => 'Finalizado',
+            ]);
+        }
+           
+    }
+
     public function finalize(): void
     {
        
@@ -365,5 +388,7 @@ class LancarNotasConselho extends Page
             ->title('Lançamento finalizado com sucesso!')
             ->success()
             ->send();
+
+        $this->finalizaConselho(); // Verifica se todas as avaliações estão finalizadas para atualizar o status geral
     }
 }

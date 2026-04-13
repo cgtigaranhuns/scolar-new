@@ -205,7 +205,7 @@ return [
             //App\Filament\Resources\UserResource::class => ['last_seen_at', 'login_count'],
         ],
         'cluster' => null,
-        'navigation_group' =>'Settings',
+        'navigation_group' =>'Configurações',
     ],
 
     'access' => [
@@ -264,5 +264,6 @@ return [
         //     'log_name' => 'Custom',
         //     'color' => 'primary',
         // ]
+        
     ],
 ];
