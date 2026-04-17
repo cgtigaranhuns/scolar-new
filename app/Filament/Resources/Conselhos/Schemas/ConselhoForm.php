@@ -115,7 +115,7 @@ class ConselhoForm
                     ]),
 
                 Fieldset::make('Avaliação das Áreas de Conhecimento')
-                    ->visible(fn(callable $get) => in_array($get('unidade'), ['2ª Unidade', '4ª Unidade']))
+                    ->visible(fn(callable $get) => in_array($get('unidade'), ['1ª Unidade', '3ª Unidade']))
                     ->schema([
                         Textarea::make('avaliacao_a1')
                             ->label('Avaliacão da área técnica')

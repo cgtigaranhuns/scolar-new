@@ -18,6 +18,11 @@ class Conselho extends Model
         'professor02_id',
         'professor03_id',
         'professor04_id',
+        'avaliacao_01',
+        'avaliacao_02',
+        'avaliacao_03',
+        'avaliacao_04',
+        'avaliacao_geral',
         'status',
     ];
 

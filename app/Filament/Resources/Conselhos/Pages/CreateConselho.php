@@ -18,7 +18,7 @@ class CreateConselho extends CreateRecord
 
     protected function afterCreate(): void
     {
-        if ($this->record->unidade === '1ª Unidade' or $this->record->unidade === '3ª Unidade') {
+        if ($this->record->unidade === '2ª Unidade' or $this->record->unidade === '4ª Unidade') {
 
             $turmaCodigo = $this->record->turma?->codigo;
 
