@@ -99,7 +99,7 @@ class LancarNotasConselho extends Page
                                     ->where($statusField, 'Finalizado')
                                     ->exists();
                                 $this->finalizada = $isFinalized;
-                                
+
 
                                 $discentes = DiscentesConselho::where('conselho_id', $state)
                                     ->with('discente')
@@ -125,6 +125,19 @@ class LancarNotasConselho extends Page
                                         'info_complementares' => $item->{"info_{$prefix}_complementares"},
                                     ];
                                 })->toArray());
+
+                                // Carrega a avaliação geral da turma
+                                $conselho = Conselho::find($state);
+                                $avaliacaoField = match ($prefix) {
+                                    'a1' => 'avaliacao_a1',
+                                    'a2' => 'avaliacao_a2',
+                                    'a3' => 'avaliacao_a3',
+                                    'a4' => 'avaliacao_a4',
+                                    default => null,
+                                };
+                                if ($avaliacaoField && $conselho) {
+                                    $set('avaliacao_' . $prefix, $conselho->{$avaliacaoField});
+                                }
 
                                 $this->showSaveButton = $discentes->isNotEmpty();
                             }),
@@ -228,7 +241,6 @@ class LancarNotasConselho extends Page
                                             ])
                                             ->columns(3),
                                     ]),
-
                                 Hidden::make('id'),
                             ])
 
@@ -236,17 +248,63 @@ class LancarNotasConselho extends Page
                             ->addable(false)
                             ->deletable(false)
                             ->reorderable(false),
-                            
+
                     ]),
+
+                // Avaliação Geral da Turma - FORA do Repeater
+                Section::make('')
+                    ->label('Avaliação Geral da Turma')
+                    ->description('Faça uma breve avaliação geral da turma.')
+                    ->visible(fn(Get $get): bool => filled($get('conselho_id')))
+                    ->schema([
+                        Textarea::make('avaliacao_' . $prefix)
+                            ->label('Descrição')
+                            ->autosize()
+                            ->disabled($this->finalizada),
+                    ]),
+
             ])
             ->statePath('data');
-    }   
-    
+    }
+
 
     public function save(): void
     {
         $formData = $this->data;
         $prefix   = $this->areaPrefix;
+        
+        // Debug: verificar o que está chegando
+      //  \Log::debug('Dados do formulário:', $formData);
+        
+        $avaliacaoKey = 'avaliacao_' . $prefix;
+        $avaliacao_geral_turma = $formData[$avaliacaoKey] ?? null;
+        
+        // Mapeia o prefixo (a1, a2, a3, a4) para o campo correto no banco (avaliacao_a1, avaliacao_a2, etc.)
+        $avaliacaoField = match ($prefix) {
+            'a1' => 'avaliacao_a1',
+            'a2' => 'avaliacao_a2',
+            'a3' => 'avaliacao_a3',
+            'a4' => 'avaliacao_a4',
+            default => null,
+        };
+        
+        if (! empty($avaliacao_geral_turma) && $avaliacaoField) {
+        //    Log::debug("Salvando avaliação {$avaliacaoField}: {$avaliacao_geral_turma}");
+         //   Log::debug("Conselho ID: {$formData['conselho_id']}");
+            
+            $conselho = Conselho::find($formData['conselho_id']);
+          //  Log::debug("Conselho encontrado: " . ($conselho ? 'sim' : 'não'));
+            
+            if ($conselho) {
+                $conselho->update([
+                    $avaliacaoField => $avaliacao_geral_turma,
+                ]);
+             //   Log::debug("Update executado com sucesso");
+            }
+        } else {
+         //   Log::debug("Avaliação vazia ou campo não encontrado. Key: {$avaliacaoKey}, Valor: " . ($avaliacao_geral_turma ?? 'null'));
+        }
+
 
         if (empty($formData['lista_alunos']) || ! is_array($formData['lista_alunos'])) {
             Notification::make()
@@ -309,12 +367,11 @@ class LancarNotasConselho extends Page
                 'status_geral_avaliacoes' => 'Finalizado',
             ]);
         }
-           
     }
 
     public function finalize(): void
     {
-       
+
         $formData = $this->data;
         $prefix   = $this->areaPrefix;
 

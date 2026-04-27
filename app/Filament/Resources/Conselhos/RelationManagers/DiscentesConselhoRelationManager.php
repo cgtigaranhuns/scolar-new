@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Conselhos\RelationManagers;
 
 use App\Models\Turma;
+use Dom\Text;
 use Filament\Actions\AssociateAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\CreateAction;
@@ -285,6 +286,9 @@ class DiscentesConselhoRelationManager extends RelationManager
                 TextColumn::make('discente.matricula')
                     ->label('Matrícula')
                     ->numeric()
+                    ->sortable(),
+                TextColumn::make('conselho.unidade')
+                    ->label('Unidade')
                     ->sortable(),
                 TextColumn::make('created_at')
                     ->dateTime()

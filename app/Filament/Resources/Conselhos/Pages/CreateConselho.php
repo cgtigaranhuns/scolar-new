@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Conselhos\Pages;
 
 use App\Filament\Resources\Conselhos\ConselhoResource;
+use App\Models\Conselho;
 use App\Models\Discente;
 use App\Models\DiscentesConselho;
 use Filament\Resources\Pages\CreateRecord;
@@ -18,8 +19,10 @@ class CreateConselho extends CreateRecord
 
     protected function afterCreate(): void
     {
-        if ($this->record->unidade === '2ª Unidade' or $this->record->unidade === '4ª Unidade') {
 
+            $this->record->status = 'Agendado';
+            $this->record->save();
+        
             $turmaCodigo = $this->record->turma?->codigo;
 
             if (! $turmaCodigo) {
@@ -34,6 +37,28 @@ class CreateConselho extends CreateRecord
                     'discente_id' => $id,
                 ])->toArray()
             );
-        }
+
+
+            // Pegar os dados dos campos avaliacao_a1, avaliacao_a2, avaliacao_a3, avaliacao_a4 do conselho da unidade anterior e preencher neste conselho
+            $unidadeAnterior = match ($this->record->unidade) {
+                '1ª Unidade' => null,
+                '2ª Unidade' => '1ª Unidade',
+                '3ª Unidade' => '2ª Unidade',
+                '4ª Unidade' => '3ª Unidade',
+                default => null,
+            };
+
+            if ($unidadeAnterior && $this->record->unidade == '2ª Unidade' || $this->record->unidade == '4ª Unidade') {
+                $conselhoAnterior = Conselho::where('unidade', $unidadeAnterior)->first();
+
+                if ($conselhoAnterior) {
+                    $this->record->avaliacao_a1 = $conselhoAnterior->avaliacao_a1;
+                    $this->record->avaliacao_a2 = $conselhoAnterior->avaliacao_a2;
+                    $this->record->avaliacao_a3 = $conselhoAnterior->avaliacao_a3;
+                    $this->record->avaliacao_a4 = $conselhoAnterior->avaliacao_a4;
+                    $this->record->save();
+                }
+            }
+        
     }
 }

@@ -13,7 +13,11 @@ class EditConselho extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            DeleteAction::make(),
+            DeleteAction::make()
+                // Excluir também os discentes associados ao conselho
+                ->before(function () {
+                    $this->record->discentesConselho()->delete();
+                }),
         ];
     }
 }

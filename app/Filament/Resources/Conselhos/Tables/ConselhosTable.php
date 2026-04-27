@@ -2,6 +2,9 @@
 
 namespace App\Filament\Resources\Conselhos\Tables;
 
+use App\Filament\Pages\AvaliacaoConselho;
+use Filament\Actions\Action;
+//use Filament\Tables\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
@@ -82,8 +85,18 @@ class ConselhosTable
                     ->label('')
                     ->tooltip('Excluir'),
                 ViewAction::make()
+                    ->visible(fn($record) => $record->unidade === '1ª Unidade' || $record->unidade === '3ª Unidade')
                     ->label('')
-                    ->tooltip('Visualizar'),
+                    ->tooltip('Visualizar Preenchimento do Conselho'),
+                Action::make('avaliar')
+                    ->visible(fn($record) => $record->unidade === '2ª Unidade' || $record->unidade === '4ª Unidade')
+                    ->label('')
+                    ->icon('heroicon-o-check')
+                    ->tooltip('Realizar Avaliação do Conselho')
+                    ->action(function ($record, $livewire) {
+                        $livewire->redirect(AvaliacaoConselho::getUrl(['record' => $record]));
+                    }),
+                    
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

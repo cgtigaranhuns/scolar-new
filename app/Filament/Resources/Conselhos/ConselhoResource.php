@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Conselhos;
 
+use App\Filament\Resources\Conselhos\Pages\AvaliacaoConselho;
 use App\Filament\Resources\Conselhos\Pages\CreateConselho;
 use App\Filament\Resources\Conselhos\Pages\EditConselho;
 use App\Filament\Resources\Conselhos\Pages\ListConselhos;
@@ -47,6 +48,7 @@ class ConselhoResource extends Resource
             'create' => CreateConselho::route('/create'),
             'edit'   => EditConselho::route('/{record}/edit'),
             'view'   => ViewConselho::route('/{record}'),
+           
         ];
     }
 }

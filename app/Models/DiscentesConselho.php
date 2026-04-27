@@ -56,6 +56,7 @@ class DiscentesConselho extends Model
         'data_avaliacao_a2', 
         'data_avaliacao_a3', 
         'data_avaliacao_a4', 
+        'avaliacao_geral_discente',
     ];
 
     public function conselho()

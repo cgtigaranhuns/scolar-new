@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Conselhos\Schemas;
 
+use App\Models\Conselho;
 use App\Models\Professor;
 use App\Models\Turma;
 use Filament\Forms\Components\DatePicker;
@@ -115,7 +116,7 @@ class ConselhoForm
                     ]),
 
                 Fieldset::make('Avaliação das Áreas de Conhecimento')
-                    ->visible(fn(callable $get) => in_array($get('unidade'), ['1ª Unidade', '3ª Unidade']))
+                    ->visible(fn(callable $get, $context) => in_array($get('unidade'), ['2ª Unidade', '4ª Unidade']) && $context === 'edit')
                     ->schema([
                         Textarea::make('avaliacao_a1')
                             ->label('Avaliacão da área técnica')
@@ -124,7 +125,7 @@ class ConselhoForm
                             ->label('Avaliacão da área de ciências da natureza, matemática e suas tecnologias')
                             ->autosize(),
                         Textarea::make('avaliacao_a3')
-                            ->label('Avaliacão da área de ciências humanas e suas tecnologias')
+                            ->label('Avaliacão da área de ciências humanas e suas tecnologias')                            
                             ->autosize(),
                         Textarea::make('avaliacao_a4')
                             ->label('Avaliacão da área de linguagens códigos e suas tecnologias')
