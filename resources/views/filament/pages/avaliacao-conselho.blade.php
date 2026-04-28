@@ -1,106 +1,169 @@
 <x-filament-panels::page>
-
-    {{-- ── Cabeçalho do Conselho ─────────────────────────────────────────── --}}
-    <div class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm px-6 py-4 mb-6">
-        <h2 class="text-base font-semibold text-gray-900 dark:text-white mb-3">
+    <x-filament::section>
+        <x-slot name="heading">
             {{ $descricao }}
-        </h2>
-        <div class="flex flex-wrap gap-x-8 gap-y-1 text-sm text-gray-600 dark:text-gray-400">
-            <span><span class="font-medium text-gray-700 dark:text-gray-300">Turma:</span> {{ $turma }}</span>
-            <span><span class="font-medium text-gray-700 dark:text-gray-300">Unidade:</span> {{ $unidade }}</span>
-            <span><span class="font-medium text-gray-700 dark:text-gray-300">Período:</span> {{ $dataInicio }} – {{ $dataFim }}</span>
-            <span>
-                <span class="font-medium text-gray-700 dark:text-gray-300">Status:</span>
-                <span @class([
-                    'inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold ml-1',
-                    'bg-success-100 text-success-700 dark:bg-success-900/30 dark:text-success-400' => $status === 'Liberado',
-                    'bg-warning-100 text-warning-700 dark:bg-warning-900/30 dark:text-warning-400' => $status === 'Agendado',
-                    'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300'               => ! in_array($status, ['Liberado','Agendado']),
-                ])>{{ $status }}</span>
-            </span>
-        </div>
-    </div>
+        </x-slot>
+        
+        <x-slot name="description">
+            <div style="display: flex; flex-wrap: wrap; gap: 16px; font-size: 14px; color: #6b7280;">
+                <span><strong style="color: #374151;">Turma:</strong> {{ $turma }}</span>
+                <span><strong style="color: #374151;">Unidade:</strong> {{ $unidade }}</span>
+                <span><strong style="color: #374151;">Período:</strong> {{ $dataInicio }} – {{ $dataFim }}</span>
+                <span>
+                    <strong style="color: #374151;">Status:</strong>
+                    @if($status === 'Liberado')
+                        <span style="display: inline-flex; align-items: center; border-radius: 9999px; padding: 2px 8px; font-size: 12px; font-weight: 600; background: #dcfce7; color: #166534;">{{ $status }}</span>
+                    @elseif($status === 'Agendado')
+                        <span style="display: inline-flex; align-items: center; border-radius: 9999px; padding: 2px 8px; font-size: 12px; font-weight: 600; background: #fef3c7; color: #92400e;">{{ $status }}</span>
+                    @else
+                        <span style="display: inline-flex; align-items: center; border-radius: 9999px; padding: 2px 8px; font-size: 12px; font-weight: 600; background: #f3f4f6; color: #6b7280;">{{ $status }}</span>
+                    @endif
+                </span>
+            </div>
+        </x-slot>
+    </x-filament::section>
 
-    {{-- ── Contador de progresso ─────────────────────────────────────────── --}}
+   <x-filament::section>
+        <x-slot name="heading">
+            <strong style="color: #db8570;">Avaliações das Áreas de Conhecimento</strong>
+            <br>
+            <br>
+            <div style="display: flex; flex-wrap: wrap; gap: 16px; font-size: 14px; color: #6b7280;">
+                <span><strong style="color: #374151;">Área Técnica:</strong> {{ $avaliacao_a1 }}</span>
+                <span><strong style="color: #374151;">Ciências da natureza, matemática e suas tecnologias:</strong> {{ $avaliacao_a2 }}</span>
+                <span><strong style="color: #374151;">Ciências humanas e suas tecnologias:</strong> {{ $avaliacao_a3 }}</span>
+                <span><strong style="color: #374151;">Linguagens códigos e suas tecnologias:</strong> {{ $avaliacao_a4 }}</span>
+            </div>
+        </x-slot>
+    </x-filament::section>
+
+    {{-- Contador de progresso --}}
     @php
         $total     = count($discentes);
         $avaliados = collect($discentes)->filter(fn($d) => ! empty($d['avaliacao_geral_discente']))->count();
     @endphp
     @if ($total > 0)
-        <div class="mb-4 flex items-center gap-3 text-sm text-gray-600 dark:text-gray-400">
-            <div class="flex-1 h-2 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden">
-                <div
-                    class="h-2 rounded-full bg-primary-500 transition-all"
-                    style="width: {{ round(($avaliados / $total) * 100) }}%"
-                ></div>
+        <x-filament::card>
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+                <div style="flex: 1; height: 8px; border-radius: 9999px; background: #e5e7eb; overflow: hidden;">
+                    <div style="height: 8px; border-radius: 9999px; background: #3b82f6; width: {{ round(($avaliados / $total) * 100) }}%;"></div>
+                </div>
+                <span style="white-space: nowrap; font-weight: 500; font-size: 14px; color: #6b7280;">{{ $avaliados }}/{{ $total }} avaliados</span>
             </div>
-            <span class="whitespace-nowrap font-medium">{{ $avaliados }}/{{ $total }} avaliados</span>
-        </div>
+        </x-filament::card>
     @endif
 
-    {{-- ── Lista de estudantes ───────────────────────────────────────────── --}}
+    {{-- Lista de estudantes --}}
     @forelse ($discentes as $discente)
         @php $id = $discente['id']; @endphp
 
-        <div class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm mb-4 overflow-hidden">
-
-            {{-- Linha do estudante --}}
-            <div class="flex items-center gap-4 px-5 py-3">
-
-                {{-- Foto compacta --}}
-                <div class="flex-shrink-0">
+        <x-filament::card class="mb-4">
+            {{-- Cabeçalho: foto, nome, matrícula e badge --}}
+            <div style="display: flex; align-items: center; gap: 16px; padding: 16px;">
+                {{-- Foto --}}
+                <div style="flex-shrink: 0; width: 112px; height: 112px;">
                     @if ($discente['foto_url'])
-                        <img
-                            src="{{ $discente['foto_url'] }}"
-                            alt="{{ $discente['nome'] }}"
-                            class="h-11 w-11 rounded-full object-cover ring-2 ring-gray-200 dark:ring-gray-600"
-                        >
+                        <img src="{{ $discente['foto_url'] }}" alt="{{ $discente['nome'] }}" style="width: 112px; height: 112px; border-radius: 50%; object-fit: cover; border: 3px solid #e5e7eb;">
                     @else
-                        <div class="h-11 w-11 rounded-full bg-gray-100 dark:bg-gray-700 ring-2 ring-gray-200 dark:ring-gray-600 flex items-center justify-center">
-                            <x-heroicon-o-user class="h-5 w-5 text-gray-400" />
+                        <div style="width: 56px; height: 56px; border-radius: 50%; background: #f3f4f6; border: 3px solid #e5e7eb; display: flex; align-items: center; justify-content: center;">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width: 28px; height: 28px; color: #9ca3af;">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+                            </svg>
                         </div>
                     @endif
                 </div>
 
                 {{-- Nome e matrícula --}}
-                <div class="flex-1 min-w-0">
-                    <p class="text-sm font-semibold text-gray-900 dark:text-white truncate leading-tight">
-                        {{ $discente['nome'] }}
-                    </p>
-                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                        Matrícula: {{ $discente['matricula'] }}
-                    </p>
+                <div style="flex: 1; min-width: 0;">
+                    <p style="font-size: 16px; font-weight: 600; color: #111827; margin: 0;">{{ $discente['nome'] }}</p>
+                    <p style="font-size: 14px; color: #6b7280; margin: 4px 0 0 0;">Matrícula: {{ $discente['matricula'] }}</p>
                 </div>
 
                 {{-- Badge de status --}}
                 @if (! empty($discente['avaliacao_geral_discente']))
-                    <span class="flex-shrink-0 inline-flex items-center gap-1 rounded-full bg-success-100 px-2.5 py-0.5 text-xs font-semibold text-success-700 dark:bg-success-900/30 dark:text-success-400">
-                        <x-heroicon-m-check-circle class="h-3.5 w-3.5" />
+                    <span style="display: inline-flex; align-items: center; gap: 6px; border-radius: 9999px; padding: 6px 12px; font-size: 13px; font-weight: 600; background: #dcfce7; color: #166534;">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width: 16px; height: 16px;">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                        </svg>
                         Avaliado
                     </span>
                 @else
-                    <span class="flex-shrink-0 inline-flex items-center gap-1 rounded-full bg-warning-100 px-2.5 py-0.5 text-xs font-semibold text-warning-700 dark:bg-warning-900/30 dark:text-warning-400">
-                        <x-heroicon-m-clock class="h-3.5 w-3.5" />
+                    <span style="display: inline-flex; align-items: center; gap: 6px; border-radius: 9999px; padding: 6px 12px; font-size: 13px; font-weight: 600; background: #fef3c7; color: #92400e;">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width: 16px; height: 16px;">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                        </svg>
                         Pendente
                     </span>
                 @endif
             </div>
 
-            {{-- Campo de avaliação + botão salvar --}}
-            <div class="px-5 pb-4 pt-1 border-t border-gray-100 dark:border-gray-700/60">
-                <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5">
-                    Avaliação Geral do Discente
-                </label>
-                <div class="flex gap-2 items-start">
+            {{-- Conceitos da unidade anterior --}}
+            @if (! empty($discente['conceitos_anteriores']))
+                @php
+                    $labelCampo = [
+                        'participacao'    => 'Participação',
+                        'interesse'       => 'Interesse',
+                        'organizacao'     => 'Organização',
+                        'comprometimento' => 'Comprometimento',
+                        'disciplina'      => 'Disciplina',
+                        'cooperacao'      => 'Cooperação',
+                    ];
+
+                    $corConceito = [
+                        'A' => ['bg' => '#dcfce7', 'color' => '#166534'],
+                        'B' => ['bg' => '#fef3c7', 'color' => '#92400e'],
+                        'C' => ['bg' => '#fee2e2', 'color' => '#991b1b'],
+                    ];
+                @endphp
+
+                <div style="padding: 0 16px 16px 16px; border-top: 1px solid #e5e7eb; padding-top: 14px;">
+                    <p style="font-size: 12px; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; margin: 0 0 10px 0;">
+                        Conceitos da Unidade Anterior
+                    </p>
+
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                        @foreach ($discente['conceitos_anteriores'] as $prefix => $dadosArea)
+                            <div style="background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 10px 14px;">
+                                <p style="font-size: 12px; font-weight: 600; color: #374151; margin: 0 0 8px 0;">
+                                    {{ $dadosArea['area'] }}
+                                </p>
+                                <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                                    @foreach ($dadosArea['conceitos'] as $campo => $conceito)
+                                        @php
+                                            $cores = $corConceito[$conceito] ?? ['bg' => '#f3f4f6', 'color' => '#374151'];
+                                        @endphp
+                                        <div style="display: flex; align-items: center; gap: 4px;">
+                                            <span style="font-size: 12px; color: #6b7280;">{{ $labelCampo[$campo] ?? $campo }}:</span>
+                                            <span style="
+                                                display: inline-flex;
+                                                align-items: center;
+                                                justify-content: center;
+                                                width: 24px;
+                                                height: 24px;
+                                                border-radius: 9999px;
+                                                font-size: 12px;
+                                                font-weight: 700;
+                                                background: {{ $cores['bg'] }};
+                                                color: {{ $cores['color'] }};
+                                            ">{{ $conceito }}</span>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
+
+            {{-- Campo de avaliação --}}
+            <div style="padding: 0 16px 16px 16px; border-top: 1px solid #e5e7eb; padding-top: 16px;">
+                <label style="display: block; font-size: 13px; font-weight: 500; color: #6b7280; margin-bottom: 8px;">Avaliação Geral do Discente</label>
+                <div style="display: flex; gap: 12px; align-items: flex-start;">
                     <textarea
                         wire:model.defer="avaliacoes.{{ $id }}"
-                        rows="2"
+                        rows="3"
                         placeholder="Digite a avaliação geral deste estudante…"
-                        class="flex-1 rounded-lg border border-gray-300 dark:border-gray-600
-                               bg-white dark:bg-gray-900 text-gray-900 dark:text-white
-                               placeholder-gray-400 dark:placeholder-gray-500
-                               focus:ring-2 focus:ring-primary-500 focus:border-primary-500
-                               text-sm px-3 py-2 resize-none transition"
+                        style="flex: 1; border-radius: 8px; border: 1px solid #d1d5db; background: white; color: #111827; font-size: 14px; padding: 12px; resize: none; font-family: inherit;"
                     ></textarea>
 
                     <button
@@ -108,17 +171,16 @@
                         wire:click="saveDiscente({{ $id }})"
                         wire:loading.attr="disabled"
                         wire:target="saveDiscente({{ $id }})"
-                        class="inline-flex items-center gap-1.5 rounded-lg bg-primary-600 hover:bg-primary-700
-                               focus:ring-2 focus:ring-primary-500 focus:ring-offset-2
-                               text-white text-xs font-semibold px-3 py-2 transition
-                               disabled:opacity-60 disabled:cursor-not-allowed flex-shrink-0"
+                        style="display: inline-flex; align-items: center; gap: 8px; border-radius: 8px; background: #2563eb; color: white; font-size: 14px; font-weight: 600; padding: 12px 20px; border: none; cursor: pointer; white-space: nowrap;"
                     >
                         <span wire:loading.remove wire:target="saveDiscente({{ $id }})">
-                            <x-heroicon-m-check class="h-3.5 w-3.5 inline -mt-0.5" />
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width: 18px; height: 18px;">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                            </svg>
                             Salvar
                         </span>
                         <span wire:loading wire:target="saveDiscente({{ $id }})">
-                            <svg class="animate-spin h-3.5 w-3.5 inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <svg class="animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" style="width: 18px; height: 18px;">
                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
                             </svg>
@@ -127,12 +189,13 @@
                     </button>
                 </div>
             </div>
-
-        </div>
+        </x-filament::card>
     @empty
-        <div class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-6 py-10 text-center text-sm text-gray-500 dark:text-gray-400">
-            Nenhum estudante encontrado para este conselho.
-        </div>
+        <x-filament::card>
+            <div style="text-align: center; padding: 40px; font-size: 14px; color: #6b7280;">
+                Nenhum estudante encontrado para este conselho.
+            </div>
+        </x-filament::card>
     @endforelse
 
     <x-filament-actions::modals />
