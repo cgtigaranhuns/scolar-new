@@ -124,7 +124,7 @@
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width: 16px; height: 16px;">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                         </svg>
-                        Pendente
+                        Sem Avaliação
                     </span>
                 @endif
             </div>
@@ -305,6 +305,45 @@
             </div>
         </x-filament::card>
     @endforelse
+
+    {{-- Avaliação geral da turma --}}
+    <x-filament::card>
+        <div style="padding: 4px 0;">
+            <p style="font-size: 15px; font-weight: 700; color: #111827; margin: 0 0 4px 0;">Avaliação Geral da Turma</p>
+            <p style="font-size: 13px; color: #6b7280; margin: 0 0 14px 0;">Registre uma avaliação geral sobre o desempenho coletivo da turma neste conselho.</p>
+
+            <textarea
+                wire:model.defer="avaliacao_geral"
+                rows="5"
+                placeholder="Digite a avaliação geral da turma…"
+                style="width: 100%; border-radius: 8px; border: 1px solid #d1d5db; background: white; color: #111827; font-size: 14px; padding: 12px; resize: vertical; font-family: inherit; box-sizing: border-box;"
+            ></textarea>
+
+            <div style="display: flex; justify-content: flex-end; margin-top: 12px;">
+                <button
+                    type="button"
+                    wire:click="saveAvaliacaoGeral"
+                    wire:loading.attr="disabled"
+                    wire:target="saveAvaliacaoGeral"
+                    style="display: inline-flex; align-items: center; gap: 8px; border-radius: 8px; background: #2563eb; color: white; font-size: 14px; font-weight: 600; padding: 12px 24px; border: none; cursor: pointer;"
+                >
+                    <span wire:loading.remove wire:target="saveAvaliacaoGeral">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width: 18px; height: 18px;">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                        </svg>
+                        Salvar
+                    </span>
+                    <span wire:loading wire:target="saveAvaliacaoGeral">
+                        <svg class="animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" style="width: 18px; height: 18px;">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                        </svg>
+                        Salvando…
+                    </span>
+                </button>
+            </div>
+        </div>
+    </x-filament::card>
 
     <x-filament-actions::modals />
 </x-filament-panels::page>

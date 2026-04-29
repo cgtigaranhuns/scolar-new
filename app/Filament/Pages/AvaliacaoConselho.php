@@ -28,6 +28,7 @@ class AvaliacaoConselho extends Page
     public string  $avaliacao_a2 = '';
     public string  $avaliacao_a3 = '';
     public string  $avaliacao_a4 = '';
+    public string  $avaliacao_geral = '';
 
     // Lista de discentes e avaliações editáveis (indexado por DiscentesConselho.id)
     public array $discentes  = [];
@@ -59,6 +60,7 @@ class AvaliacaoConselho extends Page
         $this->avaliacao_a2 = $conselho->avaliacao_a2 ?? '';
         $this->avaliacao_a3 = $conselho->avaliacao_a3 ?? '';
         $this->avaliacao_a4 = $conselho->avaliacao_a4 ?? '';
+        $this->avaliacao_geral = $conselho->avaliacao_geral ?? '';
         $this->dataInicio = $conselho->data_inicio
             ? \Carbon\Carbon::parse($conselho->data_inicio)->format('d/m/Y')
             : '';
@@ -226,5 +228,24 @@ class AvaliacaoConselho extends Page
         unset($d);
 
         Notification::make()->title('Avaliação salva!')->success()->send();
+    }
+
+    /**
+     * Salva a avaliação geral da turma no conselho.
+     */
+    public function saveAvaliacaoGeral(): void
+    {
+        $conselho = Conselho::find($this->conselhoId);
+
+        if (! $conselho) {
+            Notification::make()->title('Conselho não encontrado.')->danger()->send();
+            return;
+        }
+
+        $conselho->update([
+            'avaliacao_geral' => $this->avaliacao_geral,
+        ]);
+
+        Notification::make()->title('Avaliação geral salva!')->success()->send();
     }
 }
