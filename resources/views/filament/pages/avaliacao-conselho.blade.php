@@ -53,6 +53,38 @@
         </x-filament::card>
     @endif
 
+    {{-- ─── Definições compartilhadas ─────────────────────────────────────── --}}
+    @php
+        $labelCampo = [
+            'participacao'    => 'Participação',
+            'interesse'       => 'Interesse',
+            'organizacao'     => 'Organização',
+            'comprometimento' => 'Comprometimento',
+            'disciplina'      => 'Disciplina',
+            'cooperacao'      => 'Cooperação',
+        ];
+
+        $corConceito = [
+            'A' => ['bg' => '#dcfce7', 'color' => '#166534'],
+            'B' => ['bg' => '#fef3c7', 'color' => '#92400e'],
+            'C' => ['bg' => '#fee2e2', 'color' => '#991b1b'],
+        ];
+
+        $todasAreas = [
+            'a1' => 'Área Técnica',
+            'a2' => 'Ciências da Natureza',
+            'a3' => 'Ciências Humanas',
+            'a4' => 'Linguagens',
+        ];
+
+        $todosCampos = ['participacao', 'interesse', 'organizacao', 'comprometimento', 'disciplina', 'cooperacao'];
+
+        // Identifica se é a 4ª unidade para aplicar layout comparativo duplo
+        preg_match('/\d+/', $unidade ?? '', $_uMatches);
+        $numeroUnidadeAtual = isset($_uMatches[0]) ? (int) $_uMatches[0] : null;
+        $modoComparativoDuplo = ($numeroUnidadeAtual === 4);
+    @endphp
+
     {{-- Lista de estudantes --}}
     @forelse ($discentes as $discente)
         @php $id = $discente['id']; @endphp
@@ -97,61 +129,137 @@
                 @endif
             </div>
 
-            {{-- Conceitos da unidade anterior --}}
-            @if (! empty($discente['conceitos_anteriores']))
-                @php
-                    $labelCampo = [
-                        'participacao'    => 'Participação',
-                        'interesse'       => 'Interesse',
-                        'organizacao'     => 'Organização',
-                        'comprometimento' => 'Comprometimento',
-                        'disciplina'      => 'Disciplina',
-                        'cooperacao'      => 'Cooperação',
-                    ];
+            {{-- ─── Bloco de conceitos anteriores ──────────────────────────────── --}}
+            @php
+                $comparacao = $discente['conceitos_comparacao'] ?? [];
+                // Remove entradas nulas — só exibe unidades com dados reais
+                $comparacaoComDados = array_filter($comparacao, fn($v) => ! empty($v));
+            @endphp
 
-                    $corConceito = [
-                        'A' => ['bg' => '#dcfce7', 'color' => '#166534'],
-                        'B' => ['bg' => '#fef3c7', 'color' => '#92400e'],
-                        'C' => ['bg' => '#fee2e2', 'color' => '#991b1b'],
-                    ];
-                @endphp
-
+            @if (! empty($comparacaoComDados))
                 <div style="padding: 0 16px 16px 16px; border-top: 1px solid #e5e7eb; padding-top: 14px;">
-                    <p style="font-size: 12px; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; margin: 0 0 10px 0;">
-                        Conceitos da Unidade Anterior
-                    </p>
 
-                    <div style="display: flex; flex-direction: column; gap: 10px;">
-                        @foreach ($discente['conceitos_anteriores'] as $prefix => $dadosArea)
-                            <div style="background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 10px 14px;">
-                                <p style="font-size: 12px; font-weight: 600; color: #374151; margin: 0 0 8px 0;">
-                                    {{ $dadosArea['area'] }}
-                                </p>
-                                <div style="display: flex; flex-wrap: wrap; gap: 8px;">
-                                    @foreach ($dadosArea['conceitos'] as $campo => $conceito)
-                                        @php
-                                            $cores = $corConceito[$conceito] ?? ['bg' => '#f3f4f6', 'color' => '#374151'];
-                                        @endphp
-                                        <div style="display: flex; align-items: center; gap: 4px;">
-                                            <span style="font-size: 12px; color: #6b7280;">{{ $labelCampo[$campo] ?? $campo }}:</span>
-                                            <span style="
-                                                display: inline-flex;
-                                                align-items: center;
-                                                justify-content: center;
-                                                width: 24px;
-                                                height: 24px;
-                                                border-radius: 9999px;
-                                                font-size: 12px;
-                                                font-weight: 700;
-                                                background: {{ $cores['bg'] }};
-                                                color: {{ $cores['color'] }};
-                                            ">{{ $conceito }}</span>
+                    @if ($modoComparativoDuplo)
+                        {{-- ══════════════════════════════════════════════════════════════
+                             MODO 4ª UNIDADE — cards de área lado a lado, 1ª × 3ª unidade
+                             ══════════════════════════════════════════════════════════════ --}}
+                        <p style="font-size: 12px; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; margin: 0 0 12px 0;">
+                            Evolução dos Conceitos — 1ª × 3ª Unidade
+                        </p>
+
+                        {{-- Grade: até 2 cards por linha em telas maiores, 1 em telas pequenas --}}
+                        <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+                            @foreach ($todasAreas as $prefix => $nomeArea)
+                                @php
+                                    $conceitos1 = ($comparacao[1][$prefix]['conceitos'] ?? []);
+                                    $conceitos3 = ($comparacao[3][$prefix]['conceitos'] ?? []);
+                                    $temDados   = ! empty($conceitos1) || ! empty($conceitos3);
+                                @endphp
+
+                                @if ($temDados)
+                                    <div style="flex: 1 1 calc(50% - 5px); min-width: 260px; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px 14px; box-sizing: border-box;">
+
+                                        {{-- Título da área --}}
+                                        <p style="font-size: 12px; font-weight: 700; color: #374151; margin: 0 0 8px 0;">
+                                            {{ $nomeArea }}
+                                        </p>
+
+                                        {{-- Cabeçalho das colunas --}}
+                                        <div style="display: grid; grid-template-columns: 1fr 44px 80px; gap: 4px; align-items: center; margin-bottom: 4px;">
+                                            <span></span>
+                                            <span style="font-size: 11px; font-weight: 700; color: #6366f1; text-align: center;">1ª Unid.</span>
+                                            <span style="font-size: 11px; font-weight: 700; color: #0891b2; text-align: center;">3ª Unid.</span>
                                         </div>
-                                    @endforeach
-                                </div>
-                            </div>
-                        @endforeach
-                    </div>
+
+                                        {{-- Linhas por campo --}}
+                                        @foreach ($todosCampos as $campo)
+                                            @php
+                                                $v1 = $conceitos1[$campo] ?? null;
+                                                $v3 = $conceitos3[$campo] ?? null;
+                                                if ($v1 === null && $v3 === null) continue;
+
+                                                $cor1 = $corConceito[$v1] ?? ['bg' => '#f3f4f6', 'color' => '#6b7280'];
+                                                $cor3 = $corConceito[$v3] ?? ['bg' => '#f3f4f6', 'color' => '#6b7280'];
+
+                                                $seta = ''; $setaCor = '#6b7280';
+                                                if ($v1 && $v3) {
+                                                    $ordem = ['A' => 1, 'B' => 2, 'C' => 3];
+                                                    $o1 = $ordem[$v1] ?? 99;
+                                                    $o3 = $ordem[$v3] ?? 99;
+                                                    if ($o3 < $o1)     { $seta = '↑'; $setaCor = '#16a34a'; }
+                                                    elseif ($o3 > $o1) { $seta = '↓'; $setaCor = '#dc2626'; }
+                                                    else               { $seta = '→'; $setaCor = '#9ca3af'; }
+                                                }
+                                            @endphp
+
+                                            <div style="display: grid; grid-template-columns: 1fr 44px 80px; gap: 4px; align-items: center; padding: 3px 0; border-bottom: 1px solid #f3f4f6;">
+                                                <span style="font-size: 11px; color: #6b7280;">{{ $labelCampo[$campo] ?? $campo }}</span>
+
+                                                {{-- 1ª unidade --}}
+                                                <div style="display: flex; align-items: center; justify-content: center;">
+                                                    @if ($v1)
+                                                        <span style="display:inline-flex; align-items:center; justify-content:center; width:24px; height:24px; border-radius:9999px; font-size:12px; font-weight:700; background:{{ $cor1['bg'] }}; color:{{ $cor1['color'] }};">{{ $v1 }}</span>
+                                                    @else
+                                                        <span style="display:inline-flex; align-items:center; justify-content:center; width:24px; height:24px; border-radius:9999px; font-size:11px; color:#d1d5db; border:1px dashed #d1d5db;">–</span>
+                                                    @endif
+                                                </div>
+
+                                                {{-- 3ª unidade + seta --}}
+                                                <div style="display: flex; align-items: center; justify-content: center; gap: 3px;">
+                                                    @if ($v3)
+                                                        <span style="display:inline-flex; align-items:center; justify-content:center; width:24px; height:24px; border-radius:9999px; font-size:12px; font-weight:700; background:{{ $cor3['bg'] }}; color:{{ $cor3['color'] }};">{{ $v3 }}</span>
+                                                    @else
+                                                        <span style="display:inline-flex; align-items:center; justify-content:center; width:24px; height:24px; border-radius:9999px; font-size:11px; color:#d1d5db; border:1px dashed #d1d5db;">–</span>
+                                                    @endif
+                                                    @if ($seta)
+                                                        <span style="font-size:13px; font-weight:700; color:{{ $setaCor }};">{{ $seta }}</span>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        @endforeach
+
+                                    </div>
+                                @endif
+                            @endforeach
+                        </div>
+
+                        {{-- Legenda das setas --}}
+                        <div style="display: flex; gap: 14px; margin-top: 8px; font-size: 11px; color: #9ca3af;">
+                            <span><span style="color:#16a34a; font-weight:700;">↑</span> Melhorou</span>
+                            <span><span style="color:#9ca3af; font-weight:700;">→</span> Manteve</span>
+                            <span><span style="color:#dc2626; font-weight:700;">↓</span> Regrediu</span>
+                        </div>
+
+                    @else
+                        {{-- ══════════════════════════════════════════════════════════════
+                             MODO 2ª UNIDADE — cards de área lado a lado, 1ª unidade
+                             ══════════════════════════════════════════════════════════════ --}}
+                        <p style="font-size: 12px; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; margin: 0 0 10px 0;">
+                            Conceitos da Unidade Anterior
+                        </p>
+
+                        <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+                            @foreach ($comparacaoComDados as $numeroUnidade => $areasDoDiscente)
+                                @foreach ($areasDoDiscente as $prefix => $dadosArea)
+                                    <div style="flex: 1 1 calc(50% - 5px); min-width: 220px; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 10px 14px; box-sizing: border-box;">
+                                        <p style="font-size: 12px; font-weight: 600; color: #374151; margin: 0 0 8px 0;">
+                                            {{ $dadosArea['area'] }}
+                                        </p>
+                                        <div style="display: flex; flex-direction: column; gap: 4px;">
+                                            @foreach ($dadosArea['conceitos'] as $campo => $conceito)
+                                                @php $cores = $corConceito[$conceito] ?? ['bg' => '#f3f4f6', 'color' => '#374151']; @endphp
+                                                <div style="display: flex; align-items: center; justify-content: space-between; padding: 2px 0; border-bottom: 1px solid #f3f4f6;">
+                                                    <span style="font-size: 12px; color: #6b7280;">{{ $labelCampo[$campo] ?? $campo }}</span>
+                                                    <span style="display:inline-flex; align-items:center; justify-content:center; width:24px; height:24px; border-radius:9999px; font-size:12px; font-weight:700; background:{{ $cores['bg'] }}; color:{{ $cores['color'] }};">{{ $conceito }}</span>
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                @endforeach
+                            @endforeach
+                        </div>
+                    @endif
+
                 </div>
             @endif
 

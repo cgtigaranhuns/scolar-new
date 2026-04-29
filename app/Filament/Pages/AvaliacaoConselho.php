@@ -71,46 +71,47 @@ class AvaliacaoConselho extends Page
     }
 
     /**
-     * Retorna o número da unidade anterior à unidade do conselho atual.
-     * Regra: 2ª → 1ª, 4ª → 3ª. Demais retornam null (sem unidade anterior suportada).
+     * Retorna o número da unidade atual (inteiro) extraído da string da unidade.
      */
-    protected function getUnidadeAnterior(): ?int
+    protected function getNumeroUnidadeAtual(): ?int
     {
-        // Normaliza: extrai o primeiro dígito da string da unidade (ex: "2", "2ª", "Unidade 2")
         preg_match('/\d+/', $this->unidade ?? '', $matches);
-        $unidadeAtual = isset($matches[0]) ? (int) $matches[0] : null;
-
-        return match ($unidadeAtual) {
-            2 => 1,
-            4 => 3,
-            default => null,
-        };
+        return isset($matches[0]) ? (int) $matches[0] : null;
     }
 
     /**
-     * Busca o conselho da unidade anterior para a mesma turma.
+     * Busca um conselho da mesma turma para a unidade informada.
      */
-    protected function getConselhoAnterior(): ?Conselho
+    protected function getConselhoPorUnidade(int $numeroUnidade): ?Conselho
     {
-        $unidadeAnterior = $this->getUnidadeAnterior();
-
-        if ($unidadeAnterior === null) {
-            return null;
-        }
-
         $conselho = Conselho::find($this->conselhoId);
 
         if (! $conselho) {
             return null;
         }
 
-        // Busca um conselho da mesma turma cuja unidade corresponda à unidade anterior.
-        // A comparação usa LIKE para lidar com formatos variados ("1", "1ª", "Unidade 1", etc.)
         return Conselho::where('turma_id', $conselho->turma_id)
             ->where('id', '!=', $this->conselhoId)
-            ->where('unidade', 'LIKE', "%{$unidadeAnterior}%")
+            ->where('unidade', 'LIKE', "%{$numeroUnidade}%")
             ->latest('id')
             ->first();
+    }
+
+    /**
+     * Retorna as unidades anteriores que devem ser exibidas para comparação.
+     *
+     * Regra:
+     *   2ª unidade → [1]        (apenas 1ª)
+     *   4ª unidade → [1, 3]     (1ª e 3ª, para comparar evolução completa)
+     *   demais     → []         (nenhuma)
+     */
+    protected function getUnidadesAnteriores(): array
+    {
+        return match ($this->getNumeroUnidadeAtual()) {
+            2       => [1],
+            4       => [1, 3],
+            default => [],
+        };
     }
 
     protected function carregarDiscentes(): void
@@ -119,19 +120,30 @@ class AvaliacaoConselho extends Page
             ->with('discente')
             ->get();
 
-        // Tenta carregar conceitos da unidade anterior
-        $conselhoAnterior       = $this->getConselhoAnterior();
-        $conceitosAnteriores    = collect();
+        // Monta mapa: número da unidade → coleção de DiscentesConselho indexada por discente_id
+        $conceitosPorUnidade = [];
 
-        if ($conselhoAnterior) {
-            $conceitosAnteriores = DiscentesConselho::where('conselho_id', $conselhoAnterior->id)
-                ->get()
-                ->keyBy(fn($item) => $item->discente_id); // indexa pelo discente_id para lookup rápido
+        foreach ($this->getUnidadesAnteriores() as $numeroUnidade) {
+            $conselhoRef = $this->getConselhoPorUnidade($numeroUnidade);
+
+            if ($conselhoRef) {
+                $conceitosPorUnidade[$numeroUnidade] = DiscentesConselho::where('conselho_id', $conselhoRef->id)
+                    ->get()
+                    ->keyBy(fn($item) => $item->discente_id);
+            }
         }
 
-        $this->discentes = $discentes->map(function ($item) use ($conceitosAnteriores) {
-            $discenteId  = $item->discente_id;
-            $anterior    = $conceitosAnteriores->get($discenteId);
+        $this->discentes = $discentes->map(function ($item) use ($conceitosPorUnidade) {
+            $discenteId = $item->discente_id;
+
+            // Para cada unidade anterior, extrai os conceitos do discente (ou null se não encontrado)
+            $conceitosComparacao = [];
+            foreach ($conceitosPorUnidade as $numeroUnidade => $registros) {
+                $registro = $registros->get($discenteId);
+                $conceitosComparacao[$numeroUnidade] = $registro
+                    ? $this->extrairConceitos($registro)
+                    : null;
+            }
 
             return [
                 'id'                       => $item->id,
@@ -142,8 +154,14 @@ class AvaliacaoConselho extends Page
                     : null,
                 'avaliacao_geral_discente' => $item->avaliacao_geral_discente ?? '',
 
-                // Conceitos da unidade anterior (null quando não há unidade anterior ou registro)
-                'conceitos_anteriores'     => $anterior ? $this->extrairConceitos($anterior) : null,
+                /**
+                 * conceitos_comparacao: array indexado pelo número da unidade anterior.
+                 *
+                 * Para a 2ª unidade:  [1 => [...conceitos da 1ª...]]
+                 * Para a 4ª unidade:  [1 => [...conceitos da 1ª...], 3 => [...conceitos da 3ª...]]
+                 * Para demais:        [] (vazio)
+                 */
+                'conceitos_comparacao'     => $conceitosComparacao,
             ];
         })->toArray();
 
@@ -173,7 +191,7 @@ class AvaliacaoConselho extends Page
             // Só inclui a área se houver pelo menos um conceito lançado
             if (! empty($conceitos)) {
                 $resultado[$prefix] = [
-                    'area'     => $nomeArea,
+                    'area'      => $nomeArea,
                     'conceitos' => $conceitos,
                 ];
             }

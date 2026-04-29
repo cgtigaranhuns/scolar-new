@@ -85,11 +85,11 @@ class ConselhosTable
                     ->label('')
                     ->tooltip('Excluir'),
                 ViewAction::make()
-                    ->visible(fn($record) => $record->unidade === '1ª Unidade' || $record->unidade === '3ª Unidade')
+                    ->visible(fn($record) => $record->status === 'Liberado' && ($record->unidade === '1ª Unidade' || $record->unidade === '3ª Unidade'))
                     ->label('')
                     ->tooltip('Visualizar Preenchimento do Conselho'),
                 Action::make('avaliar')
-                    ->visible(fn($record) => $record->unidade === '2ª Unidade' || $record->unidade === '4ª Unidade')
+                    ->visible(fn($record) => $record->status === 'Liberado' && ($record->unidade === '2ª Unidade' || $record->unidade === '4ª Unidade'))
                     ->label('')
                     ->icon('heroicon-o-check')
                     ->tooltip('Realizar Avaliação do Conselho')
