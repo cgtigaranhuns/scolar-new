@@ -3,8 +3,10 @@
 namespace App\Filament\Resources\Turmas;
 
 use App\Filament\Resources\Turmas\Pages\ManageTurmas;
+use App\Models\Discente;
 use App\Models\Turma;
 use BackedEnum;
+use Dom\Text;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
@@ -50,6 +52,16 @@ class TurmaResource extends Resource
             ->columns([
                 TextColumn::make('nome')
                     ->searchable(),
+                TextColumn::make('professores_count')
+                    ->label('Professores')
+                    ->alignCenter()
+                    ->counts('professores'), // Contar a relação belongsToMany
+                TextColumn::make('estudantes_count')
+                    ->label('Estudantes')                  
+                    ->alignCenter()
+                    ->getStateUsing(function (Turma $record) {
+                        return $record->discentes()->count();
+                    }),               
                 TextColumn::make('codigo')
                     ->label('Código')
                     ->toggleable(isToggledHiddenByDefault: true)

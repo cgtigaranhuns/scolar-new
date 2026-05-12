@@ -103,7 +103,8 @@ class LancarNotasConselho extends Page
 
                                 $discentes = DiscentesConselho::where('conselho_id', $state)
                                     ->with('discente')
-                                    ->get();
+                                    ->get()
+                                    ->sortBy('discente.nome');
 
                                 $set('lista_alunos', $discentes->map(function ($item) use ($prefix) {
                                     return [
@@ -187,37 +188,37 @@ class LancarNotasConselho extends Page
                                                     ->label('Participação')
                                                     ->options(['A' => 'A', 'B' => 'B', 'C' => 'C'])
                                                     ->inline()
-                                                    ->disabled(fn(Get $get) => $get('status_avaliacao_' . $prefix) === 'Finalizado')
+                                                    ->disabled(fn() => $this->finalizada)
                                                     ->columnSpan(1),
                                                 ToggleButtons::make('nt_interesse')
                                                     ->label('Interesse')
                                                     ->options(['A' => 'A', 'B' => 'B', 'C' => 'C'])
                                                     ->inline()
-                                                    ->disabled(fn(Get $get) => $get('status_avaliacao_' . $prefix) === 'Finalizado')
+                                                    ->disabled(fn() => $this->finalizada)
                                                     ->columnSpan(1),
                                                 ToggleButtons::make('nt_organizacao')
                                                     ->label('Organização')
                                                     ->options(['A' => 'A', 'B' => 'B', 'C' => 'C'])
                                                     ->inline()
-                                                    ->disabled(fn(Get $get) => $get('status_avaliacao_' . $prefix) === 'Finalizado')
+                                                    ->disabled(fn() => $this->finalizada)
                                                     ->columnSpan(1),
                                                 ToggleButtons::make('nt_comprometimento')
                                                     ->label('Comprometimento')
                                                     ->options(['A' => 'A', 'B' => 'B', 'C' => 'C'])
                                                     ->inline()
-                                                    ->disabled(fn(Get $get) => $get('status_avaliacao_' . $prefix) === 'Finalizado')
+                                                    ->disabled(fn() => $this->finalizada)
                                                     ->columnSpan(1),
                                                 ToggleButtons::make('nt_disciplina')
                                                     ->label('Disciplina')
                                                     ->options(['A' => 'A', 'B' => 'B', 'C' => 'C'])
                                                     ->inline()
-                                                    ->disabled(fn(Get $get) => $get('status_avaliacao_' . $prefix) === 'Finalizado')
+                                                    ->disabled(fn() => $this->finalizada)
                                                     ->columnSpan(1),
                                                 ToggleButtons::make('nt_cooperacao')
                                                     ->label('Cooperação')
                                                     ->options(['A' => 'A', 'B' => 'B', 'C' => 'C'])
                                                     ->inline()
-                                                    ->disabled(fn(Get $get) => $get('status_avaliacao_' . $prefix) === 'Finalizado')
+                                                    ->disabled(fn() => $this->finalizada)
                                                     ->columnSpan(1),
                                             ]),
 
@@ -226,17 +227,17 @@ class LancarNotasConselho extends Page
                                                 Textarea::make('obs_gestao')
                                                     ->label('Observação para Gestão')
                                                     ->autosize()
-                                                    ->disabled(fn(Get $get) => $get('status_avaliacao_' . $prefix) === 'Finalizado')
+                                                    ->disabled(fn() => $this->finalizada)
                                                     ->columnSpan(3),
                                                 Textarea::make('obs_pais')
                                                     ->label('Observação para os Pais')
                                                     ->autosize()
-                                                    ->disabled(fn(Get $get) => $get('status_avaliacao_' . $prefix) === 'Finalizado')
+                                                    ->disabled(fn() => $this->finalizada)
                                                     ->columnSpan(3),
                                                 Textarea::make('info_complementares')
                                                     ->label('Informações Complementares')
                                                     ->autosize()
-                                                    ->disabled(fn(Get $get) => $get('status_avaliacao_' . $prefix) === 'Finalizado')
+                                                    ->disabled(fn() => $this->finalizada)
                                                     ->columnSpan(3),
                                             ])
                                             ->columns(3),
@@ -260,7 +261,7 @@ class LancarNotasConselho extends Page
                         Textarea::make('avaliacao_' . $prefix)
                             ->label('Descrição')
                             ->autosize()
-                            ->disabled($this->finalizada),
+                            ->disabled(fn() => $this->finalizada),
                     ]),
 
             ])

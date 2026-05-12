@@ -186,42 +186,82 @@ class ViewConselho extends ViewRecord
                     ->columns(1)
                     ->schema([
                         TextEntry::make('professor01.nome')
-                            ->label(AreaConhecimento::find(Professor::find($this->record->professor01_id)?->area_conhecimento_id)?->nome . ': '.
-                                DiscentesConselho::where('status_avaliacao_a1', 'Finalizado')->first()?->status_avaliacao_a1 ?? 'Pendente')
+                            ->label(function ($record) {
+                                $professor = Professor::find($record->professor01_id);
+                                $areaName = AreaConhecimento::find($professor?->area_conhecimento_id)?->nome;
+                              //  dd($record);
+                                $status = DiscentesConselho::where('conselho_id', $record->id)
+                                    ->where("status_avaliacao_a1", 'Finalizado')
+                                    ->exists() ? 'Finalizado' : 'Pendente';
+                                return ($areaName ? "{$areaName}: " : '') . $status;
+                                
+                            })
                             ->badge()
-                            ->color(function () {
-                                $status = DiscentesConselho::where('status_avaliacao_a1', 'Finalizado')->first()?->status_avaliacao_a1 ?? null;                           
-                                return $status === 'Finalizado' ? 'success' : 'danger';
+                            ->color(function(){
+                                if($this->record) {
+                                    $status = DiscentesConselho::where('conselho_id', $this->record->id)
+                                        ->where("status_avaliacao_a1", 'Finalizado')
+                                        ->exists() ? 'success' : 'danger';
+                                    return $status;
+                                }
+                                return 'danger';
                             })
                             ->placeholder('—'),
 
                         TextEntry::make('professor02.nome')
-                            ->label(AreaConhecimento::find(Professor::find($this->record->professor02_id)?->area_conhecimento_id)?->nome . ': ' .
-                                DiscentesConselho::where('status_avaliacao_a2', 'Finalizado')->first()?->status_avaliacao_a2 ?? 'Pendente')
-                           ->badge()
-                            ->color(function () {
-                                $status = DiscentesConselho::where('status_avaliacao_a2', 'Finalizado')->first()?->status_avaliacao_a2 ?? null;
-                                return $status === 'Finalizado' ? 'success' : 'danger';
+                            ->label(function ($record) {
+                                $professor = Professor::find($record->professor02_id);
+                                $areaName = AreaConhecimento::find($professor?->area_conhecimento_id)?->nome;
+                                $status = $record->status_avaliacao_a2 ?? 'Pendente';
+                                return ($areaName ? "{$areaName}: " : '') . $status;
+                            })
+                            ->badge()
+                            ->color(function(){
+                                if($this->record) {
+                                    $status = DiscentesConselho::where('conselho_id', $this->record->id)
+                                        ->where("status_avaliacao_a2", 'Finalizado')
+                                        ->exists() ? 'success' : 'danger';
+                                    return $status;
+                                }
+                                return 'danger';
                             })
                             ->placeholder('—'),
 
                         TextEntry::make('professor03.nome')
-                            ->label(AreaConhecimento::find(Professor::find($this->record->professor03_id)?->area_conhecimento_id)?->nome . ': ' .
-                                DiscentesConselho::where('status_avaliacao_a3', 'Finalizado')->first()?->status_avaliacao_a3 ?? 'Pendente')
+                            ->label(function ($record) {
+                                $professor = Professor::find($record->professor03_id);
+                                $areaName = AreaConhecimento::find($professor?->area_conhecimento_id)?->nome;
+                                $status = $record->status_avaliacao_a3 ?? 'Pendente';
+                                return ($areaName ? "{$areaName}: " : '') . $status;
+                            })
                             ->badge()
-                            ->color(function () {
-                                $status = DiscentesConselho::where('status_avaliacao_a3', 'Finalizado')->first()?->status_avaliacao_a3 ?? null;
-                                return $status === 'Finalizado' ? 'success' : 'danger';
+                            ->color(function(){
+                                if($this->record) {
+                                    $status = DiscentesConselho::where('conselho_id', $this->record->id)
+                                        ->where("status_avaliacao_a3", 'Finalizado')
+                                        ->exists() ? 'success' : 'danger';
+                                    return $status;
+                                }
+                                return 'danger';
                             })
                             ->placeholder('—'),
 
                         TextEntry::make('professor04.nome')
-                            ->label(AreaConhecimento::find(Professor::find($this->record->professor04_id)?->area_conhecimento_id)?->nome . ': ' .
-                                DiscentesConselho::where('status_avaliacao_a4', 'Finalizado')->first()?->status_avaliacao_a4 ?? 'Pendente')
+                            ->label(function ($record) {
+                                $professor = Professor::find($record->professor04_id);
+                                $areaName = AreaConhecimento::find($professor?->area_conhecimento_id)?->nome;
+                                $status = $record->status_avaliacao_a4 ?? 'Pendente';
+                                return ($areaName ? "{$areaName}: " : '') . $status;
+                            })
                             ->badge()
-                            ->color(function () {
-                                $status = DiscentesConselho::where('status_avaliacao_a4', 'Finalizado')->first()?->status_avaliacao_a4 ?? null;
-                                return $status === 'Finalizado' ? 'success' : 'danger';
+                            ->color(function(){
+                                if($this->record) {
+                                    $status = DiscentesConselho::where('conselho_id', $this->record->id)
+                                        ->where("status_avaliacao_a4", 'Finalizado')
+                                        ->exists() ? 'success' : 'danger';
+                                    return $status;
+                                }
+                                return 'danger';
                             })
                             ->placeholder('—'),
                     ]),

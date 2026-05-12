@@ -61,4 +61,9 @@ class CreateConselho extends CreateRecord
             }
         
     }
+
+    public function getRedirectUrl(): string
+    {
+        return $this->getResource()::getUrl('index');
+    }
 }

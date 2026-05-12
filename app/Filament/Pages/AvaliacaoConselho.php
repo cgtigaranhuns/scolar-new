@@ -120,7 +120,8 @@ class AvaliacaoConselho extends Page
     {
         $discentes = DiscentesConselho::where('conselho_id', $this->conselhoId)
             ->with('discente')
-            ->get();
+            ->get()
+            ->sortBy('discente.nome');
 
         // Monta mapa: número da unidade → coleção de DiscentesConselho indexada por discente_id
         $conceitosPorUnidade = [];
@@ -135,7 +136,18 @@ class AvaliacaoConselho extends Page
             }
         }
 
-        $this->discentes = $discentes->map(function ($item) use ($conceitosPorUnidade) {
+        // Busca registros da 2ª unidade para exibir o comentário anterior do discente.
+        // Para conselhos de 3ª e 4ª unidade, a "unidade de comentário" é sempre a 2ª.
+        // Para 1ª e 2ª unidade não há comentário anterior a exibir.
+        $registros2u = collect();
+        $conselhoRef2u = $this->getConselhoPorUnidade(2);
+        if ($conselhoRef2u) {
+            $registros2u = DiscentesConselho::where('conselho_id', $conselhoRef2u->id)
+                ->get()
+                ->keyBy(fn($item) => $item->discente_id);
+        }
+
+        $this->discentes = $discentes->map(function ($item) use ($conceitosPorUnidade, $registros2u) {
             $discenteId = $item->discente_id;
 
             // Para cada unidade anterior, extrai os conceitos do discente (ou null se não encontrado)
@@ -147,6 +159,9 @@ class AvaliacaoConselho extends Page
                     : null;
             }
 
+            // Comentário registrado na avaliação geral da 2ª unidade
+            $registro2u = $registros2u->get($discenteId);
+
             return [
                 'id'                       => $item->id,
                 'nome'                     => $item->discente?->nome      ?? '–',
@@ -154,7 +169,8 @@ class AvaliacaoConselho extends Page
                 'foto_url'                 => $item->discente?->foto
                     ? asset('storage/' . $item->discente->foto)
                     : null,
-                'avaliacao_geral_discente' => $item->avaliacao_geral_discente ?? '',
+                'avaliacao_geral_discente'    => $item->avaliacao_geral_discente ?? '',
+                'avaliacao_geral_discente_2u' => $registro2u?->avaliacao_geral_discente ?? null,
 
                 /**
                  * conceitos_comparacao: array indexado pelo número da unidade anterior.

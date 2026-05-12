@@ -263,9 +263,21 @@
                 </div>
             @endif
 
+            {{-- Comentário da 2ª unidade (exibido apenas no conselho de 4ª unidade) --}}
+            @if ($modoComparativoDuplo && ! empty($discente['avaliacao_geral_discente_2u']))
+                <div style="padding: 0 16px 16px 16px; border-top: 1px solid #e5e7eb; padding-top: 14px;">
+                    <p style="font-size: 12px; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; margin: 0 0 8px 0;">
+                        Avaliação registrada na 2ª Unidade
+                    </p>
+                    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-left: 3px solid #6366f1; border-radius: 6px; padding: 10px 14px;">
+                        <p style="font-size: 13px; color: #374151; margin: 0; line-height: 1.6; white-space: pre-wrap;">{{ $discente['avaliacao_geral_discente_2u'] }}</p>
+                    </div>
+                </div>
+            @endif
+
             {{-- Campo de avaliação --}}
             <div style="padding: 0 16px 16px 16px; border-top: 1px solid #e5e7eb; padding-top: 16px;">
-                <label style="display: block; font-size: 13px; font-weight: 500; color: #6b7280; margin-bottom: 8px;">Avaliação Geral do Discente</label>
+                <label style="display: block; font-size: 13px; font-weight: 500; color: #6b7280; margin-bottom: 8px;">Avaliação Geral do Estudante</label>
                 <div style="display: flex; gap: 12px; align-items: flex-start;">
                     <textarea
                         wire:model.defer="avaliacoes.{{ $id }}"
