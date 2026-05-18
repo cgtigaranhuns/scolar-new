@@ -66,9 +66,11 @@ class Relatorios extends Page
                                     ->schema([
                                         Select::make('conselho_id')
                                             ->label('Selecione o Conselho')
+                                            ->searchable()
                                             ->options(Conselho::all()->pluck('descricao', 'id')),
                                         Select::make('turma_id')
                                             ->label('Selecione a Turma')
+                                            ->searchable()
                                             ->options(Turma::all()->pluck('nome', 'id')),
                                         DatePicker::make('data_inicio')
                                             ->label('Data de Início'),
@@ -76,6 +78,7 @@ class Relatorios extends Page
                                             ->label('Data de Fim'),
                                         Select::make('unidade')
                                             ->label('Selecione a Unidade')
+                                            ->searchable()
                                             ->options([
                                                 '1ª Unidade' => '1ª Unidade',
                                                 '2ª Unidade' => '2ª Unidade',
@@ -84,6 +87,7 @@ class Relatorios extends Page
                                             ]),
                                         Select::make('status')
                                             ->label('Selecione o Status')
+                                            ->searchable()
                                             ->options([
                                                 'Agendado' => 'Agendado',
                                                 'Liberado' => 'Liberado',
@@ -92,15 +96,19 @@ class Relatorios extends Page
                                             ]),                                        
                                         Select::make('professor01_id')
                                             ->label('Professores da Área Técnica')
+                                            ->searchable()
                                             ->options(Professor::all()->pluck('nome', 'id')),
                                         Select::make('professor02_id')
                                             ->label('Professores de Ciências da Natureza, Matemática e suas Tecnologias')
+                                            ->searchable()
                                             ->options(Professor::all()->pluck('nome', 'id')),
                                         Select::make('professor03_id')
                                             ->label('Professor de Ciências Humanas e suas Tecnologias')
+                                            ->searchable()
                                             ->options(Professor::all()->pluck('nome', 'id')),
                                         Select::make('professor04_id')
                                             ->label('Professores de Linguagens códigos e suas Tecnologias')
+                                            ->searchable()
                                             ->options(Professor::all()->pluck('nome', 'id')),
                                     ])
 

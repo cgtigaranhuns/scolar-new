@@ -55,7 +55,7 @@ class ParametroResource extends Resource
                         Textarea::make('endereco')
                             ->columnSpanFull()
                             ->autosize()
-                            ->label('Endereço')
+                            ->label('Endereço Completo')
                             ->required(false),
                         TextInput::make('setor_ensino')
                             ->label('Setor de Ensino')
