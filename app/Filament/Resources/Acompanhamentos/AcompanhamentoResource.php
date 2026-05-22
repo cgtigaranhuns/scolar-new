@@ -19,6 +19,7 @@ use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\ToggleButtons;
+use Filament\Infolists\Components\TextEntry;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
@@ -74,7 +75,9 @@ class AcompanhamentoResource extends Resource
                 Select::make('user_id')
                     ->label('Responsável pelo Atendimento')
                     ->required()
-                    ->default(fn() => Auth::id())
+                    ->disabled()
+                    ->dehydrated(true)
+                    ->default(fn() => Auth::id())                    
                     ->options(User::pluck('name', 'id')),
 
                 DateTimePicker::make('data_hora')

@@ -3,6 +3,7 @@
 namespace App\Filament\Pages;
 
 use App\Models\Conselho;
+use App\Models\Discente;
 use App\Models\Professor;
 use App\Models\Turma;
 use Filament\Pages\Page;
@@ -15,6 +16,8 @@ use Filament\Forms\Components\TextInput;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Callout;
+use Symfony\Component\Mime\Part\DataPart;
+
 
 class Relatorios extends Page
 {
@@ -93,7 +96,7 @@ class Relatorios extends Page
                                                 'Liberado' => 'Liberado',
                                                 'Concluído' => 'Concluído',
                                                 'Cancelado' => 'Cancelado'
-                                            ]),                                        
+                                            ]),
                                         Select::make('professor01_id')
                                             ->label('Professores da Área Técnica')
                                             ->searchable()
@@ -151,16 +154,118 @@ class Relatorios extends Page
                                 $livewire->js("window.open('{$url}', '_blank')");
                             }),
 
-
-                        Action::make('relatorio-alunos')
+                        Action::make('relatorio-acompanhamento-discentes')
                             ->icon('heroicon-o-users')
-                            ->label('Relatório de Alunos'),
+                            ->label('Relatório de Acompanhamento dos Estudantes')
+                            ->schema([
+                                Section::make('Filtros')
+                                    ->columns(2)
+                                    ->schema([
+                                        Select::make('turma_id')
+                                            ->label('Selecione a Turma')
+                                            ->searchable()
+                                            ->options(Turma::all()->pluck('nome', 'id')),
+                                        Select::make('discente_id')
+                                            ->label('Selecione o Estudante')
+                                            ->searchable()
+                                            ->options(Discente::all()->mapWithKeys(function ($discente) {
+                                                return [$discente->id => $discente->nome . ' - ' . $discente->matricula];
+                                            })->toArray()),
+                                        DatePicker::make('data_inicio')
+                                            ->label('Data de Início'),
+                                        DatePicker::make('data_fim')
+                                            ->label('Data de Fim'),
+                                        Select::make('tipo')
+                                            ->label('Selecione o Tipo de Acompanhamento')
+                                            ->searchable()
+                                            ->options([
+                                                'DEMANDA ESPONTÂNEA' => 'DEMANDA ESPONTÂNEA',
+                                                'PÓS CONSELHO' => 'PÓS CONSELHO',
+                                                'ROTINA DE ESTUDOS' => 'ROTINA DE ESTUDOS',
+                                                'RESPONSÁVEL' => 'RESPONSÁVEL',
+                                                'DAPNE' => 'DAPNE',
+                                                'OUTROS' => 'OUTROS',
+                                            ]),
+                                    ])
+                            ])
+                            ->action(function (array $data, $livewire) {
+                                $params = [];
+                                if ($data['turma_id']) {
+                                    $params['turma_id'] = $data['turma_id'];
+                                }
+                                if ($data['discente_id']) {
+                                    $params['discente_id'] = $data['discente_id'];
+                                }
+                                if ($data['data_inicio']) {
+                                    $params['data_inicio'] = $data['data_inicio'];
+                                }
+                                if ($data['data_fim']) {
+                                    $params['data_fim'] = $data['data_fim'];
+                                }
+                                if ($data['tipo']) {
+                                    $params['tipo'] = $data['tipo'];
+                                }
+                                $queryString = http_build_query($params);
+                                $url = route('acompanhamentos.pdf') . ($queryString ? ('?' . $queryString) : '');
+
+                                $livewire->js("window.open('{$url}', '_blank')");
+                            }),
+
+                        Action::make('relatorio-geral-discentes')
+                            ->icon('heroicon-o-users')
+                            ->label('Relatório Geral do Estudante')
+                            ->schema([
+                                Section::make('Filtros')
+                                    ->columns(2)
+                                    ->schema([
+                                        Select::make('discente_id')
+                                            ->label('Selecione o Estudante')
+                                            ->searchable()
+                                            ->options(Discente::all()->mapWithKeys(function ($discente) {
+                                                return [$discente->id => $discente->nome . ' - ' . $discente->matricula];
+                                            })->toArray()),
+                                        Section::make('')
+                                            ->label('Período dos Conselhos')                                            
+                                            ->columns(2)
+                                            ->schema([
+                                                DatePicker::make('data_inicio')
+                                                    ->label('Data de Início'),
+                                                DatePicker::make('data_fim')
+                                                    ->label('Data de Fim'),
+
+                                            ])
+                                            ->columnSpanFull(),
+                                    ]),
+                            ])
+                            ->action(function (array $data, $livewire) {
+                                $params = [];
+                                if ($data['discente_id']) {
+                                    $params['discente_id'] = $data['discente_id'];
+                                }
+                                if ($data['data_inicio']) {
+                                    $params['data_inicio'] = $data['data_inicio'];
+                                }
+                                if ($data['data_fim']) {
+                                    $params['data_fim'] = $data['data_fim'];
+                                }
+                                $queryString = http_build_query($params);
+                                $url = route('relatorioGeralDiscente.pdf') . ($queryString ? ('?' . $queryString) : '');
+
+                                $livewire->js("window.open('{$url}', '_blank')");
+                            }),
+
+
+
+
+
+
                         Action::make('relatorio-professores')
                             ->icon('heroicon-o-user')
                             ->label('Relatório de Professores'),
                         Action::make('relatorio-turmas')
                             ->icon('heroicon-o-user-group')
                             ->label('Relatório de Turmas'),
+
                     ])
             ]);
     }
