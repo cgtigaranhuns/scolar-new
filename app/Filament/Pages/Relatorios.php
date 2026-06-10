@@ -16,6 +16,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Callout;
+use Illuminate\Support\Facades\Auth;
 use Symfony\Component\Mime\Part\DataPart;
 
 
@@ -31,26 +32,10 @@ class Relatorios extends Page
 
     protected static ?string $label = 'Relatórios';
 
-    // protected function getFooterActions(): array
-    // {
-    //     return [
-    //         Action::make('relatorio-conselhos')
-    //             ->icon('heroicon-o-user-group')
-    //             ->label('Relatório de Conselhos'),
-    //         Action::make('relatorio-alunos')
-    //             ->icon('heroicon-o-users')
-    //             ->label('Relatório de Alunos'),
-    //          Action::make('relatorio-professores')
-    //             ->icon('heroicon-o-user')
-    //             ->label('Relatório de Professores'),
-    //          Action::make('relatorio-turmas')
-    //             ->icon('heroicon-o-user-group')
-    //             ->label('Relatório de Turmas'),
-
-    //     ];  
-
-
-    // }
+    public static function canAccess(): bool
+    {
+        return Auth::check() && (Auth::user()->hasRole(['TI', 'Administrador']));
+    }    
 
     public function form(Schema $schema): Schema
     {
@@ -61,7 +46,7 @@ class Relatorios extends Page
                     ->description('Selecione o tipo de relatório que deseja gerar.')
                     ->footer([
                         Action::make('relatorio-conselhos')
-                            ->icon('heroicon-o-user-group')
+                            ->icon('heroicon-o-document-chart-bar')
                             ->label('Relatório de Conselhos')
                             ->schema([
                                 Section::make('Filtros')
@@ -155,7 +140,7 @@ class Relatorios extends Page
                             }),
 
                         Action::make('relatorio-acompanhamento-discentes')
-                            ->icon('heroicon-o-users')
+                            ->icon('heroicon-o-document-chart-bar')
                             ->label('Relatório de Acompanhamento dos Estudantes')
                             ->schema([
                                 Section::make('Filtros')
@@ -212,7 +197,7 @@ class Relatorios extends Page
                             }),
 
                         Action::make('relatorio-geral-discentes')
-                            ->icon('heroicon-o-users')
+                            ->icon('heroicon-o-document-chart-bar')
                             ->label('Relatório Geral do Estudante')
                             ->schema([
                                 Section::make('Filtros')
@@ -254,17 +239,12 @@ class Relatorios extends Page
                                 $livewire->js("window.open('{$url}', '_blank')");
                             }),
 
-
-
-
-
-
-                        Action::make('relatorio-professores')
-                            ->icon('heroicon-o-user')
-                            ->label('Relatório de Professores'),
-                        Action::make('relatorio-turmas')
-                            ->icon('heroicon-o-user-group')
-                            ->label('Relatório de Turmas'),
+                        // Action::make('relatorio-professores')
+                        //     ->icon('heroicon-o-user')
+                        //     ->label('Relatório de Professores'),
+                        // Action::make('relatorio-turmas')
+                        //     ->icon('heroicon-o-user-group')
+                        //     ->label('Relatório de Turmas'),
 
                     ])
             ]);

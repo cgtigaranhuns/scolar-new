@@ -8,10 +8,11 @@ use Illuminate\Notifications\Notifiable;
 use LdapRecord\Laravel\Auth\LdapAuthenticatable;
 use LdapRecord\Laravel\Auth\AuthenticatesWithLdap;
 use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable implements LdapAuthenticatable
 {
-    use HasFactory, Notifiable, AuthenticatesWithLdap, LogsActivity;
+    use HasFactory, Notifiable, AuthenticatesWithLdap, LogsActivity, HasRoles;
 
     protected $fillable = [
         'name',

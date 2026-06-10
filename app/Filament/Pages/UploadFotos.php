@@ -14,6 +14,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Auth;
 
 class UploadFotos extends Page implements HasForms, HasTable
 {
@@ -29,6 +30,11 @@ class UploadFotos extends Page implements HasForms, HasTable
 
     public ?array $data = [];
     public ?array $fotos = null;
+
+    public static function canAccess(): bool
+    {
+        return Auth::check() && (Auth::user()->hasRole(['TI', 'Administrador']));
+    }
 
     public function mount(): void
     {

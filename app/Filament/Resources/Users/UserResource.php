@@ -11,6 +11,7 @@ use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -27,7 +28,7 @@ class UserResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'User';
 
-    protected static string|UnitEnum|null $navigationGroup = 'Administração';
+    protected static string|UnitEnum|null $navigationGroup = 'Segurança';
 
     protected static ?int $navigationSort = 1;
 
@@ -59,6 +60,23 @@ class UserResource extends Resource
                         fn(string $context): string =>
                         $context === 'edit' ? '••••••••' : ''
                     ),
+                    Select::make('roles')
+                            ->label('Perfil')
+                            //->multiple()
+                            ->visible(function () {
+                                /** @var \App\Models\User */
+                                $authUser = auth()->user();
+
+                                /** @var \App\Models\User */
+                                $authUser =  auth()->user();
+                                if ($authUser->hasRole(['TI', 'Administrador'])) {
+                                    return true;
+                                } else {
+                                    return false;
+                                }
+                            })
+                            ->preload()
+                            ->relationship('roles', 'name'),
             ]);
     }
 

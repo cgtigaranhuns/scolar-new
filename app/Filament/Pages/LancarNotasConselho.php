@@ -39,6 +39,11 @@ class LancarNotasConselho extends Page
     // Prefixo da área do professor logado (a1, a2, a3 ou a4)
     public string $areaPrefix = 'a1';
 
+    public static function canAccess(): bool
+    {
+        return Auth::check() && (Auth::user()->hasRole(['TI', 'Administrador','Avaliador']));
+    }
+
     public function mount(): void
     {
         // Resolve o prefixo uma única vez no mount

@@ -6,9 +6,14 @@ use App\Models\Conselho;
 use App\Models\DiscentesConselho;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
+use Illuminate\Support\Facades\Auth;
+
 
 class AvaliacaoConselho extends Page
 {
+
+
+
     protected static string|\BackedEnum|null $navigationIcon  = 'heroicon-o-eye';
     protected static ?string                 $title           = 'Avaliação do Conselho';
     protected string                         $view            = 'filament.pages.avaliacao-conselho';
@@ -33,6 +38,8 @@ class AvaliacaoConselho extends Page
     // Lista de discentes e avaliações editáveis (indexado por DiscentesConselho.id)
     public array $discentes  = [];
     public array $avaliacoes = [];
+
+    
 
     public function mount(): void
     {

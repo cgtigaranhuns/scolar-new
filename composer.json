@@ -12,7 +12,8 @@
         "laravel/framework": "^11.0",
         "laravel/tinker": "^2.9",
         "mradder/filament-logger": "^1.2",
-        "spatie/laravel-activitylog": "^4.12"
+        "spatie/laravel-activitylog": "^4.12",
+        "spatie/laravel-permission": "^6.25"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",

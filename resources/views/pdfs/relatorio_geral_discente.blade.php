@@ -119,6 +119,33 @@
             padding: 8px 10px;
             font-size: 10px;
             border-bottom: 1px solid #ddd;
+            margin-bottom: 12px;
+        }
+
+        /* Bloco de cada conselho — separação visual entre conselhos */
+        .conselho-block {
+            margin: 0 10px 16px 10px;
+            border: 1px solid #c8d8e8;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        /* Título de destaque do conselho */
+        .conselho-titulo {
+            background-color: #1a5276;
+            color: #ffffff;
+            font-weight: bold;
+            font-size: 10px;
+            padding: 6px 10px;
+            letter-spacing: 0.3px;
+            text-transform: uppercase;
+        }
+        .conselho-titulo span {
+            font-weight: normal;
+            font-size: 9px;
+            color: #aed6f1;
+            margin-left: 10px;
+            text-transform: none;
         }
         .info-grid {
             display: table;
@@ -548,69 +575,115 @@
                         $isSemConceitos = in_array($unidadeNum, [2, 4]);
                     @endphp
 
-                    {{-- Tabela de dados do conselho --}}
-                    <table class="table-conselho-dados" style="margin-top:0;">
-                        <thead>
-                            <tr>
-                                <th style="width:23%">Conselho</th>
-                                <th style="width:10%">Unidade</th>
-                                <th style="width:12%">Turma</th>
-                                <th style="width:14%">Período</th>
-                                <th style="width:26%">Professores</th>
-                                <th style="width:15%">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>{{ $conselho->descricao ?? '—' }}</td>
-                                <td>{{ $conselho->unidade ?? '—' }}</td>
-                                <td>{{ $conselho->turma->nome ?? ($conselho->turma_id ?? '—') }}</td>
-                                <td>
-                                    {{ optional($conselho->data_inicio)->format('d/m/Y') ?? '—' }}
-                                    –
-                                    {{ optional($conselho->data_fim)->format('d/m/Y') ?? '—' }}
-                                </td>
-                                <td>
-                                    @if($conselho)
-                                        <ul class="prof-lista">
-                                            @foreach(['professor01','professor02','professor03','professor04'] as $p)
-                                                @if($conselho->$p)
-                                                    <li>{{ $conselho->$p->nome ?? $conselho->$p->name ?? '—' }}</li>
-                                                @endif
-                                            @endforeach
-                                        </ul>
-                                    @else
-                                        —
-                                    @endif
-                                </td>
-                                <td class="text-center status-{{ Str::slug($conselho->status ?? '') }}">
-                                    {{ $conselho->status ?? '—' }}
-                                </td>
-                            </tr>
-                            {{-- Avaliação Geral em linha separada --}}
-                            <tr>
-                                <td colspan="6" style="background:#eaf2fb; padding:4px 8px;">
-                                    @php
-                                        $ag  = $primeiro->avaliacao_geral_discente ?? ($conselho->avaliacao_geral ?? null);
-                                        $agV = strtoupper(trim($ag ?? ''));
-                                        $agClass = match($agV) {
-                                            'A' => 'conceito-badge conceito-a',
-                                            'B' => 'conceito-badge conceito-b',
-                                            'C' => 'conceito-badge conceito-c',
-                                            default => '',
-                                        };
-                                    @endphp
-                                    <strong style="color:#1a5276; font-size:8px;">Avaliação Geral do Estudante:</strong>
-                                    &nbsp;
-                                    @if($agClass)
-                                        <span class="{{ $agClass }}">{{ $agV }}</span>
-                                    @else
-                                        <span style="font-size:8px;">{{ $ag ?? '—' }}</span>
-                                    @endif
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                    <div class="conselho-block">
+
+                    {{-- Título do conselho em destaque --}}
+                    <div class="conselho-titulo">
+                        {{ $conselho->descricao ?? 'Conselho' }}
+                        <span>{{ $conselho->unidade ?? '' }}</span>
+                    </div>
+
+                    {{-- Tabela de dados do conselho — colunas variam por unidade --}}
+                    @php
+                        $colspanAvalGeral = $isSemConceitos ? 1 : 2;
+                        $ag  = $primeiro->avaliacao_geral_discente ?? ($conselho->avaliacao_geral ?? null);
+                        $agV = strtoupper(trim($ag ?? ''));
+                        $agClass = match($agV) {
+                            'A' => 'conceito-badge conceito-a',
+                            'B' => 'conceito-badge conceito-b',
+                            'C' => 'conceito-badge conceito-c',
+                            default => '',
+                        };
+                    @endphp
+
+                    @if(!$isSemConceitos)
+                        {{-- 1ª e 3ª unidade: Professores + Status --}}
+                        <table class="table-conselho-dados" style="margin-top:0;">
+                            <thead>
+                                <tr>
+                                    <th style="width:70%">Professores</th>
+                                    <th style="width:30%">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        @if($conselho)
+                                            @php
+                                                $profAreas = [
+                                                    'professor01' => 'A1 — Técnica',
+                                                    'professor02' => 'A2 — Natureza',
+                                                    'professor03' => 'A3 — Humanas',
+                                                    'professor04' => 'A4 — Linguagens',
+                                                ];
+                                            @endphp
+                                            <table style="width:100%; border-collapse:collapse; margin:0; padding:0;">
+                                                @foreach(array_chunk(array_keys($profAreas), 2, true) as $linhaProfs)
+                                                    <tr>
+                                                        @foreach($linhaProfs as $profKey)
+                                                            @php $areaNome = $profAreas[$profKey]; @endphp
+                                                            <td style="width:50%; padding:2px 4px; border:1px solid #eee; vertical-align:top; background:#fafafa;">
+                                                                @if($conselho->$profKey)
+                                                                    <span style="color:#7f8c8d; font-size:7px; display:block;">{{ $areaNome }}</span>
+                                                                    <span style="font-size:8px;">{{ $conselho->$profKey->nome ?? $conselho->$profKey->name ?? '—' }}</span>
+                                                                @else
+                                                                    <span style="color:#7f8c8d; font-size:7px; display:block;">{{ $areaNome }}</span>
+                                                                    <span style="color:#ccc; font-size:8px;">—</span>
+                                                                @endif
+                                                            </td>
+                                                        @endforeach
+                                                    </tr>
+                                                @endforeach
+                                            </table>
+                                        @else
+                                            —
+                                        @endif
+                                    </td>
+                                    <td class="text-center status-{{ Str::slug($conselho->status ?? '') }}" style="text-align:center; vertical-align:middle; font-size:11px; font-weight:bold; letter-spacing:0.3px;">
+                                        {{ $conselho->status ?? '—' }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2" style="background:#eaf2fb; padding:4px 8px;">
+                                        <strong style="color:#1a5276; font-size:8px;">Avaliação Geral do Estudante:</strong>
+                                        &nbsp;
+                                        @if($agClass)
+                                            <span class="{{ $agClass }}">{{ $agV }}</span>
+                                        @else
+                                            <span style="font-size:8px;">{{ $ag ?? '—' }}</span>
+                                        @endif
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    @else
+                        {{-- 2ª e 4ª unidade: apenas Status --}}
+                        <table class="table-conselho-dados" style="margin-top:0;">
+                            <thead>
+                                <tr>
+                                    <th style="width:100%">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="status-{{ Str::slug($conselho->status ?? '') }}" style="text-align:center; vertical-align:middle; font-size:11px; font-weight:bold; letter-spacing:0.3px; padding:10px 5px;">
+                                        {{ $conselho->status ?? '—' }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="background:#eaf2fb; padding:4px 8px;">
+                                        <strong style="color:#1a5276; font-size:8px;">Avaliação Geral do Estudante:</strong>
+                                        &nbsp;
+                                        @if($agClass)
+                                            <span class="{{ $agClass }}">{{ $agV }}</span>
+                                        @else
+                                            <span style="font-size:8px;">{{ $ag ?? '—' }}</span>
+                                        @endif
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    @endif
 
                     @if(!$isSemConceitos)
                         {{-- Legenda dos critérios --}}
@@ -638,14 +711,12 @@
                                     <th colspan="6" class="th-area th-sep">A2 — Natureza</th>
                                     <th colspan="6" class="th-area">A3 — Humanas</th>
                                     <th colspan="6" class="th-area th-sep">A4 — Linguagens</th>
-                                    <th style="width:7%">Status</th>
                                 </tr>
                                 <tr>
                                     <th>P</th><th>I</th><th>O</th><th>C</th><th>D</th><th>Cp</th>
                                     <th class="th-sep">P</th><th>I</th><th>O</th><th>C</th><th>D</th><th>Cp</th>
                                     <th class="th-sep">P</th><th>I</th><th>O</th><th>C</th><th>D</th><th>Cp</th>
                                     <th class="th-sep">P</th><th>I</th><th>O</th><th>C</th><th>D</th><th>Cp</th>
-                                    <th></th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -680,9 +751,6 @@
                                         <td>{!! $conceitoBadge($registro->nt_a4_comprometimento) !!}</td>
                                         <td>{!! $conceitoBadge($registro->nt_a4_disciplina) !!}</td>
                                         <td>{!! $conceitoBadge($registro->nt_a4_cooperacao) !!}</td>
-                                        <td class="text-center status-{{ Str::slug($registro->status_geral_avaliacoes ?? '') }}">
-                                            {{ $registro->status_geral_avaliacoes ?? '—' }}
-                                        </td>
                                     </tr>
 
                                     {{-- Observacoes por area --}}
@@ -698,19 +766,19 @@
                                     @foreach($obsAreas as [$areaTitulo, $obsGestao, $obsPais, $obsCompl])
                                         @if($obsGestao || $obsPais || $obsCompl)
                                             <tr>
-                                                <td colspan="25" style="padding:0;">
+                                                <td colspan="24" style="padding:0;">
                                                     <div class="observacoes-area">
                                                         <div class="obs-item">
                                                             <span class="obs-area-titulo">{{ $areaTitulo }}</span>
                                                             @if($obsGestao)
                                                                 <div class="obs-row">
-                                                                    <span class="obs-label">Obs. de Gestao:</span>
+                                                                    <span class="obs-label">Obs. de Gestão:</span>
                                                                     <span class="obs-text">{{ strip_tags($obsGestao) }}</span>
                                                                 </div>
                                                             @endif
                                                             @if($obsPais)
                                                                 <div class="obs-row">
-                                                                    <span class="obs-label">Obs. aos Pais/Responsaveis:</span>
+                                                                    <span class="obs-label">Obs. aos Pais/Responsáveis:</span>
                                                                     <span class="obs-text">{{ strip_tags($obsPais) }}</span>
                                                                 </div>
                                                             @endif
@@ -727,61 +795,6 @@
                                         @endif
                                     @endforeach
 
-                                    {{-- Datas de avaliacao com status por area --}}
-                                    @php
-                                        $fmtData = function($val) {
-                                            if (!$val) return '—';
-                                            try {
-                                                return \Carbon\Carbon::parse($val)->format('d/m/Y');
-                                            } catch (\Exception $e) {
-                                                return $val;
-                                            }
-                                        };
-                                        $datasAreas = [
-                                            ['A1 — Técnica',    $registro->data_avaliacao_a1, $registro->status_avaliacao_a1 ?? null],
-                                            ['A2 — Natureza',   $registro->data_avaliacao_a2, $registro->status_avaliacao_a2 ?? null],
-                                            ['A3 — Humanas',    $registro->data_avaliacao_a3, $registro->status_avaliacao_a3 ?? null],
-                                            ['A4 — Linguagens', $registro->data_avaliacao_a4, $registro->status_avaliacao_a4 ?? null],
-                                        ];
-                                    @endphp
-                                    <tr>
-                                        <td colspan="25" style="padding:0; background:#f4f8fb;">
-                                            <table style="width:100%; border-collapse:collapse; font-size:8px; margin:0;">
-                                                <thead>
-                                                    <tr>
-                                                        <th style="background:#34495e; color:#fff; padding:3px 6px; width:25%; text-align:left;">A1 — Técnica</th>
-                                                        <th style="background:#34495e; color:#fff; padding:3px 6px; width:25%; text-align:left; border-left:2px solid #2c3e50;">A2 — Natureza</th>
-                                                        <th style="background:#34495e; color:#fff; padding:3px 6px; width:25%; text-align:left; border-left:2px solid #2c3e50;">A3 — Humanas</th>
-                                                        <th style="background:#34495e; color:#fff; padding:3px 6px; width:25%; text-align:left; border-left:2px solid #2c3e50;">A4 — Linguagens</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    <tr>
-                                                        @foreach($datasAreas as [$areaNm, $dataVal, $statusVal])
-                                                            <td style="padding:4px 6px; vertical-align:top; border:1px solid #ddd; background:#fff;">
-                                                                <div style="color:#555;">
-                                                                    <strong style="color:#2c3e50;">Data:</strong>
-                                                                    {{ $fmtData($dataVal) }}
-                                                                </div>
-                                                                <div style="margin-top:2px;">
-                                                                    <strong style="color:#2c3e50;">Status:</strong>
-                                                                    <span class="status-{{ Str::slug($statusVal ?? '') }}">
-                                                                        {{ $statusVal ?? '—' }}
-                                                                    </span>
-                                                                </div>
-                                                            </td>
-                                                        @endforeach
-                                                    </tr>
-                                                </tbody>
-                                            </table>
-                                        </td>
-                                        <td style="font-size:8px; background:#f4f8fb; padding:4px 6px; vertical-align:middle; border:1px solid #ddd;">
-                                            <strong style="color:#2c3e50;">Status geral:</strong><br>
-                                            <span class="status-{{ Str::slug($registro->status_geral_avaliacoes ?? '') }}">
-                                                {{ $registro->status_geral_avaliacoes ?? '—' }}
-                                            </span>
-                                        </td>
-                                    </tr>
                                 @endforeach
                             </tbody>
                         </table>
@@ -931,7 +944,7 @@
                                                     <span class="badge-medio">{{ $qb }}B</span>
                                                     <span class="badge-ruim">{{ $qc }}C</span>
                                                 @else
-                                                    <span class="sem-obs">sem dados</span>
+                                                    <span class="sem-obs">Sem dados</span>
                                                 @endif
                                             </div>
                                         </div>
@@ -1006,51 +1019,9 @@
                             </div>
                         @endif
 
-                    @else
-                        {{-- Conselhos de 2ª e 4ª unidade: apenas avaliação geral --}}
-                        <div class="estudantes-header">
-                            <span class="estudantes-title">Avaliação Geral do Estudante</span>
-                            <span style="font-size:8px; color:#7f8c8d; font-style:italic;">
-                                Conselho de {{ $conselho->unidade ?? '—' }} unidade — sem lançamento de conceitos por área
-                            </span>
-                        </div>
-                        @foreach($registrosConselho as $registro)
-                            @php
-                                $av      = $registro->avaliacao_geral_discente ?? null;
-                                $avV     = strtoupper(trim($av ?? ''));
-                                $avStyle = match($avV) {
-                                    'A' => 'color:#27ae60; font-weight:bold;',
-                                    'B' => 'color:#e67e22; font-weight:bold;',
-                                    'C' => 'color:#e74c3c; font-weight:bold;',
-                                    default => 'color:#888;',
-                                };
-                            @endphp
-                            <div style="padding:8px 10px; font-size:10px; background:#f4f8fb; border-bottom:1px solid #ddd;">
-                                <strong>Avaliação Geral:</strong>
-                                <span style="{{ $avStyle }}">{{ $av ?? '—' }}</span>
-                                &nbsp;|&nbsp;
-                                <strong>Status:</strong>
-                                <span class="status-{{ Str::slug($registro->status_geral_avaliacoes ?? '') }}">
-                                    {{ $registro->status_geral_avaliacoes ?? '—' }}
-                                </span>
-                            </div>
-                        @endforeach
-
-                        @php
-                            $avalTurmaGeral24 = $conselho->avaliacao_turma_geral ?? ($conselho->avaliacao_geral ?? null);
-                        @endphp
-                        @if($avalTurmaGeral24)
-                            <div class="avaliacao-turma-wrapper">
-                                <div class="avaliacao-turma-titulo">Avaliação Geral da Turma</div>
-                                <div class="avaliacao-turma-body">
-                                    <div class="avaliacao-turma-geral">
-                                        <span class="avaliacao-turma-geral-label">Avaliação Geral:</span>
-                                        <span class="avaliacao-turma-geral-texto">{{ $avalTurmaGeral24 }}</span>
-                                    </div>
-                                </div>
-                            </div>
-                        @endif
                     @endif
+
+                    </div>{{-- /conselho-block --}}
 
                 @endforeach
             @else
@@ -1065,19 +1036,19 @@
                     ->get();
             @endphp
 
-            <div class="estudantes-header" style="margin-top:10px;">
+            <div class="estudantes-header" style="margin: 14px 10px 0 10px; border-radius:4px 4px 0 0;">
                 <span class="estudantes-title">Acompanhamentos</span>
                 <span style="font-size:8px; color:#7f8c8d;">Total: {{ $acompanhamentos->count() }}</span>
             </div>
 
             @if($acompanhamentos->count() > 0)
-                <table class="table-acompanhamentos">
+                <table class="table-acompanhamentos" style="margin: 0 10px 14px 10px; width: calc(100% - 20px);">
                     <thead>
                         <tr>
                             <th style="width:5%">ID</th>
                             <th style="width:18%">Turma</th>
                             <th style="width:16%">Tipo</th>
-                            <th style="width:33%">Responsavel</th>
+                            <th style="width:33%">Responsável</th>
                             <th style="width:18%">Data / Hora</th>
                         </tr>
                     </thead>
@@ -1092,11 +1063,11 @@
                             </tr>
                             <tr>
                                 <td colspan="5" class="observacao-cell">
-                                    <strong>Observacao:</strong>
+                                    <strong>Observação:</strong>
                                     @if(!empty($a->observacao))
                                         {{ strip_tags($a->observacao) }}
                                     @else
-                                        <span class="sem-obs">Nenhuma observacao registrada.</span>
+                                        <span class="sem-obs">Nenhuma observação registrada.</span>
                                     @endif
                                 </td>
                             </tr>
@@ -1104,7 +1075,7 @@
                     </tbody>
                 </table>
             @else
-                <div class="summary" style="margin:8px;">Nenhum acompanhamento registrado para este estudante.</div>
+                <div class="summary" style="margin: 0 10px 14px 10px;">Nenhum acompanhamento registrado para este estudante.</div>
             @endif
 
         </div>{{-- /discente-wrapper --}}
