@@ -10,10 +10,11 @@ use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
+use App\Mail\LiberacaoConselhoEmail;
 use Filament\Tables\Columns\SelectColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
-use Spatie\FlareClient\View;
+use Illuminate\Support\Facades\Mail;
 
 class ConselhosTable
 {
@@ -51,6 +52,19 @@ class ConselhosTable
                         'Concluído' => 'Concluído',
                         'Cancelado' => 'Cancelado'
                     ])
+                    ->afterStateUpdated(function ($state, $record) {
+                        // Enviar email para os professores responsáveis pelo conselho
+                        if ($state === 'Liberado') {
+                            $emails = collect([
+                                optional($record->professor01)->email,
+                                optional($record->professor02)->email,
+                                optional($record->professor03)->email,
+                                optional($record->professor04)->email,
+                            ])->filter()->unique();
+
+                            $emails->each(fn ($email) => Mail::to($email)->send(new LiberacaoConselhoEmail($record)));
+                        }
+                    })
                     // ->icon(fn($state) => match ($state) {
                     //     'Agendado' => 'heroicon-o-calendar',
                     //     'Em andamento' => 'heroicon-o-clock',
@@ -104,4 +118,6 @@ class ConselhosTable
                 ]),
             ]);
     }
+
+    
 }

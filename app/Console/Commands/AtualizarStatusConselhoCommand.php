@@ -5,6 +5,9 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use App\Models\Conselho;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
+use App\Mail\LiberacaoConselhoEmail;
 
 class AtualizarStatusConselhoCommand extends Command
 {
@@ -39,6 +42,58 @@ class AtualizarStatusConselhoCommand extends Command
 
         foreach ($conselhosParaLiberar as $conselho) {
             $conselho->update(['status' => 'Liberado']);
+
+            // Enviar e-mail para os professores cadastrados no conselho
+            // Somente para unidades 1 ou 3
+            $unidade = (int) $conselho->unidade;
+            if ($unidade === 1 || $unidade === 3) {
+                $professores = collect([
+                    $conselho->professor01,
+                    $conselho->professor02,
+                    $conselho->professor03,
+                    $conselho->professor04,
+                ])->filter();
+
+                // Envia para cada professor com e-mail válido (não duplicando)
+                $emails = $professores->pluck('email')->filter()->unique();
+
+                $sentCount = 0;
+                $failed = [];
+
+                foreach ($emails as $email) {
+                    try {
+                        Mail::to($email)->send(new LiberacaoConselhoEmail($conselho));
+                        $sentCount++;
+                        Log::info('E-mail de liberação enviado', [
+                            'conselho_id' => $conselho->id,
+                            'email' => $email,
+                            'descricao' => $conselho->descricao ?? null,
+                        ]);
+                    } catch (\Exception $e) {
+                        $failed[] = ['email' => $email, 'error' => $e->getMessage()];
+                        Log::error('Erro ao enviar e-mail de liberação', [
+                            'conselho_id' => $conselho->id,
+                            'email' => $email,
+                            'error' => $e->getMessage(),
+                        ]);
+                    }
+                }
+
+                // Log resumo por conselho
+                Log::info('Resumo de envio de liberação para conselho', [
+                    'conselho_id' => $conselho->id,
+                    'enviados' => $sentCount,
+                    'falhas' => count($failed),
+                ]);
+
+                // Opcional: exibir no console também
+                if ($sentCount > 0) {
+                    $this->info("E-mails enviados para conselho {$conselho->id}: {$sentCount}");
+                }
+                if (!empty($failed)) {
+                    $this->error("Falhas ao enviar e-mails para conselho {$conselho->id}: " . count($failed));
+                }
+            }
         }
 
         // 2. CONCLUIR/BLOQUEAR CONSELHOS EXPIRADOS
