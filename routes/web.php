@@ -5,9 +5,13 @@ use App\Http\Controllers\ConselhoController;
 use App\Http\Controllers\AcompanhamentoController;
 use App\Http\Controllers\RelatorioGeralDiscenteController;
 
+// Route::get('/', function () {
+//     return view('welcome');
+// });
+
 Route::get('/', function () {
-    return view('welcome');
-});
+    //view('welcome');
+    return  redirect('/admin'); })->name('login');
 
 
 Route::get('/conselhos/relatorio', [ConselhoController::class, 'relatorio'])->name('conselhos.pdf');
