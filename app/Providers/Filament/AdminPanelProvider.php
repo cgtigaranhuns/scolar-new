@@ -29,6 +29,9 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->unsavedChangesAlerts()
+            ->brandLogoHeight('4rem')
+            ->brandLogo(asset('img/Logo-Garanhuns.png'))
+            ->darkMode(false)
             ->login(Login::class)
             ->colors([
                 'primary' => '#3CB371',
