@@ -44,6 +44,7 @@ class ProfessorResource extends Resource
                     ->label('Área de Conhecimento')
                     ->relationship('areaConhecimento', 'nome')
                     ->searchable()
+                    ->nullable()
                     ->preload(),
             ]);
     }
