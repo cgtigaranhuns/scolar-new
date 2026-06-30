@@ -274,6 +274,7 @@ class ViewConselho extends ViewRecord
                         RepeatableEntry::make('discentesConselho')
                             ->hiddenLabel()
                             ->contained(true)
+                            ->state(fn ($record) => $record->discentesConselho->load('discente')->sortBy('discente.nome')->values())
                             ->schema([
 
                                 // Cabeçalho do discente
