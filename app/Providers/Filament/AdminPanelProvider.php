@@ -29,6 +29,7 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->unsavedChangesAlerts()
+            ->globalSearch(false)
             ->brandLogoHeight('4rem')
             ->brandLogo(asset('img/Logo-Garanhuns.png'))
             ->darkMode(false)

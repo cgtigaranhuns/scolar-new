@@ -10,6 +10,7 @@ use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\UserProvider;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 use LdapRecord\Laravel\Auth\LdapAuthenticatable;
 
 /**
@@ -166,11 +167,19 @@ class MultiLdapUserProvider implements UserProvider
             return $user;
         }
 
-        return User::create([
+        $user = User::create([
             'name'     => $discente->nome,
             'username' => $matricula,
             'password' => bcrypt(Str::random(16)),
         ]);
+
+        DB::table('model_has_roles')->insertOrIgnore([
+            'role_id'    => 4,
+            'model_type' => User::class,
+            'model_id'   => $user->id,
+        ]);
+
+        return $user;
     }
 
     protected function getOrCreateLocalUser($ldapUser, array $credentials): User
@@ -187,12 +196,20 @@ class MultiLdapUserProvider implements UserProvider
             return $user;
         }
 
-        return User::create([
+        $user = User::create([
             'name'     => $ldapUser->getFirstAttribute('description') ?? $username,
             'email'    => $email,
             'username' => $username,
             'password' => bcrypt(Str::random(16)),
         ]);
+
+        DB::table('model_has_roles')->insertOrIgnore([
+            'role_id'    => 3,
+            'model_type' => User::class,
+            'model_id'   => $user->id,
+        ]);
+
+        return $user;
     }
 
     protected function syncUserAttributes(User $user, $ldapUser, string $email, string $username): void
