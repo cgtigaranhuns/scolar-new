@@ -336,7 +336,7 @@ class DiscentesConselhoRelationManager extends RelationManager
 
             ])
             ->recordActions([
-                EditAction::make(),
+             //   EditAction::make(),
                // DissociateAction::make(),
                 DeleteAction::make(),
             ])

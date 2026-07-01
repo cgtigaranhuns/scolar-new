@@ -212,8 +212,12 @@ class ViewConselho extends ViewRecord
                             ->label(function ($record) {
                                 $professor = Professor::find($record->professor02_id);
                                 $areaName = AreaConhecimento::find($professor?->area_conhecimento_id)?->nome;
-                                $status = $record->status_avaliacao_a2 ?? 'Pendente';
+                              //  dd($record);
+                                $status = DiscentesConselho::where('conselho_id', $record->id)
+                                    ->where("status_avaliacao_a2", 'Finalizado')
+                                    ->exists() ? 'Finalizado' : 'Pendente';
                                 return ($areaName ? "{$areaName}: " : '') . $status;
+                                
                             })
                             ->badge()
                             ->color(function(){
@@ -231,8 +235,12 @@ class ViewConselho extends ViewRecord
                             ->label(function ($record) {
                                 $professor = Professor::find($record->professor03_id);
                                 $areaName = AreaConhecimento::find($professor?->area_conhecimento_id)?->nome;
-                                $status = $record->status_avaliacao_a3 ?? 'Pendente';
+                              //  dd($record);
+                                $status = DiscentesConselho::where('conselho_id', $record->id)
+                                    ->where("status_avaliacao_a3", 'Finalizado')
+                                    ->exists() ? 'Finalizado' : 'Pendente';
                                 return ($areaName ? "{$areaName}: " : '') . $status;
+                                
                             })
                             ->badge()
                             ->color(function(){
@@ -246,18 +254,22 @@ class ViewConselho extends ViewRecord
                             })
                             ->placeholder('—'),
 
-                        TextEntry::make('professor04.nome')
+                        TextEntry::make('professor02.nome')
                             ->label(function ($record) {
-                                $professor = Professor::find($record->professor04_id);
+                                $professor = Professor::find($record->professor02_id);
                                 $areaName = AreaConhecimento::find($professor?->area_conhecimento_id)?->nome;
-                                $status = $record->status_avaliacao_a4 ?? 'Pendente';
+                              //  dd($record);
+                                $status = DiscentesConselho::where('conselho_id', $record->id)
+                                    ->where("status_avaliacao_a2", 'Finalizado')
+                                    ->exists() ? 'Finalizado' : 'Pendente';
                                 return ($areaName ? "{$areaName}: " : '') . $status;
+                                
                             })
                             ->badge()
                             ->color(function(){
                                 if($this->record) {
                                     $status = DiscentesConselho::where('conselho_id', $this->record->id)
-                                        ->where("status_avaliacao_a4", 'Finalizado')
+                                        ->where("status_avaliacao_a2", 'Finalizado')
                                         ->exists() ? 'success' : 'danger';
                                     return $status;
                                 }
