@@ -7,6 +7,7 @@ use App\Models\AreaConhecimento;
 use App\Models\Discente;
 use App\Models\DiscentesConselho;
 use App\Models\Professor;
+use Filament\Actions\Action;
 use Filament\Actions\EditAction;
 use Filament\Infolists\Components\ImageEntry;
 use Filament\Infolists\Components\RepeatableEntry;
@@ -21,6 +22,14 @@ use Filament\Schemas\Schema;
 class ViewConselho extends ViewRecord
 {
     protected static string $resource = ConselhoResource::class;
+
+    protected function resetAreaAvaliacoes($record, string $prefix): void
+    {
+        DiscentesConselho::where('conselho_id', $record->id)
+            ->update([
+                "status_avaliacao_{$prefix}" => 'Pendente',
+            ]);
+    }
 
     // protected function getHeaderActions(): array
     // {
@@ -189,92 +198,152 @@ class ViewConselho extends ViewRecord
                             ->label(function ($record) {
                                 $professor = Professor::find($record->professor01_id);
                                 $areaName = AreaConhecimento::find($professor?->area_conhecimento_id)?->nome;
-                              //  dd($record);
                                 $status = DiscentesConselho::where('conselho_id', $record->id)
-                                    ->where("status_avaliacao_a1", 'Finalizado')
+                                    ->where('status_avaliacao_a1', 'Finalizado')
                                     ->exists() ? 'Finalizado' : 'Pendente';
                                 return ($areaName ? "{$areaName}: " : '') . $status;
-                                
                             })
                             ->badge()
-                            ->color(function(){
-                                if($this->record) {
+                            ->color(function () {
+                                if ($this->record) {
                                     $status = DiscentesConselho::where('conselho_id', $this->record->id)
-                                        ->where("status_avaliacao_a1", 'Finalizado')
+                                        ->where('status_avaliacao_a1', 'Finalizado')
                                         ->exists() ? 'success' : 'danger';
                                     return $status;
                                 }
+
                                 return 'danger';
                             })
+                            ->suffixActions([
+                                Action::make('reabrir_a1')
+                                    ->label('Reabrir')
+                                    ->icon('heroicon-o-arrow-path')
+                                    ->color('danger')
+                                    ->size('sm')
+                                    ->visible(fn ($record) => DiscentesConselho::where('conselho_id', $record->id)
+                                        ->where('status_avaliacao_a1', 'Finalizado')
+                                        ->exists())
+                                    ->requiresConfirmation()
+                                    ->modalHeading('Reabrir avaliação da área')
+                                    ->modalDescription('Isso apenas mudará o status da avaliação desta área para pendente para todos os estudantes do conselho.')
+                                    ->action(function ($record) {
+                                        $this->resetAreaAvaliacoes($record, 'a1');
+                                    }),
+                            ])
                             ->placeholder('—'),
 
                         TextEntry::make('professor02.nome')
                             ->label(function ($record) {
                                 $professor = Professor::find($record->professor02_id);
                                 $areaName = AreaConhecimento::find($professor?->area_conhecimento_id)?->nome;
-                              //  dd($record);
                                 $status = DiscentesConselho::where('conselho_id', $record->id)
-                                    ->where("status_avaliacao_a2", 'Finalizado')
+                                    ->where('status_avaliacao_a2', 'Finalizado')
                                     ->exists() ? 'Finalizado' : 'Pendente';
                                 return ($areaName ? "{$areaName}: " : '') . $status;
-                                
                             })
                             ->badge()
-                            ->color(function(){
-                                if($this->record) {
+                            ->color(function () {
+                                if ($this->record) {
                                     $status = DiscentesConselho::where('conselho_id', $this->record->id)
-                                        ->where("status_avaliacao_a2", 'Finalizado')
+                                        ->where('status_avaliacao_a2', 'Finalizado')
                                         ->exists() ? 'success' : 'danger';
                                     return $status;
                                 }
+
                                 return 'danger';
                             })
+                            ->suffixActions([
+                                Action::make('reabrir_a2')
+                                    ->label('Reabrir')
+                                    ->icon('heroicon-o-arrow-path')
+                                    ->color('danger')
+                                    ->size('sm')
+                                    ->visible(fn ($record) => DiscentesConselho::where('conselho_id', $record->id)
+                                        ->where('status_avaliacao_a2', 'Finalizado')
+                                        ->exists())
+                                    ->requiresConfirmation()
+                                    ->modalHeading('Reabrir avaliação da área')
+                                    ->modalDescription('Isso apenas mudará o status da avaliação desta área para pendente para todos os estudantes do conselho.')
+                                    ->action(function ($record) {
+                                        $this->resetAreaAvaliacoes($record, 'a2');
+                                    }),
+                            ])
                             ->placeholder('—'),
 
                         TextEntry::make('professor03.nome')
                             ->label(function ($record) {
                                 $professor = Professor::find($record->professor03_id);
                                 $areaName = AreaConhecimento::find($professor?->area_conhecimento_id)?->nome;
-                              //  dd($record);
                                 $status = DiscentesConselho::where('conselho_id', $record->id)
-                                    ->where("status_avaliacao_a3", 'Finalizado')
+                                    ->where('status_avaliacao_a3', 'Finalizado')
                                     ->exists() ? 'Finalizado' : 'Pendente';
                                 return ($areaName ? "{$areaName}: " : '') . $status;
-                                
                             })
                             ->badge()
-                            ->color(function(){
-                                if($this->record) {
+                            ->color(function () {
+                                if ($this->record) {
                                     $status = DiscentesConselho::where('conselho_id', $this->record->id)
-                                        ->where("status_avaliacao_a3", 'Finalizado')
+                                        ->where('status_avaliacao_a3', 'Finalizado')
                                         ->exists() ? 'success' : 'danger';
                                     return $status;
                                 }
+
                                 return 'danger';
                             })
+                            ->suffixActions([
+                                Action::make('reabrir_a3')
+                                    ->label('Reabrir')
+                                    ->icon('heroicon-o-arrow-path')
+                                    ->color('danger')
+                                    ->size('sm')
+                                    ->visible(fn ($record) => DiscentesConselho::where('conselho_id', $record->id)
+                                        ->where('status_avaliacao_a3', 'Finalizado')
+                                        ->exists())
+                                    ->requiresConfirmation()
+                                    ->modalHeading('Reabrir avaliação da área')
+                                    ->modalDescription('Isso apenas mudará o status da avaliação desta área para pendente para todos os estudantes do conselho.')
+                                    ->action(function ($record) {
+                                        $this->resetAreaAvaliacoes($record, 'a3');
+                                    }),
+                            ])
                             ->placeholder('—'),
 
                         TextEntry::make('professor04.nome')
                             ->label(function ($record) {
                                 $professor = Professor::find($record->professor04_id);
                                 $areaName = AreaConhecimento::find($professor?->area_conhecimento_id)?->nome;
-                              //  dd($record);
                                 $status = DiscentesConselho::where('conselho_id', $record->id)
-                                    ->where("status_avaliacao_a2", 'Finalizado')
+                                    ->where('status_avaliacao_a4', 'Finalizado')
                                     ->exists() ? 'Finalizado' : 'Pendente';
                                 return ($areaName ? "{$areaName}: " : '') . $status;
-                                
                             })
                             ->badge()
-                            ->color(function(){
-                                if($this->record) {
+                            ->color(function () {
+                                if ($this->record) {
                                     $status = DiscentesConselho::where('conselho_id', $this->record->id)
-                                        ->where("status_avaliacao_a4", 'Finalizado')
+                                        ->where('status_avaliacao_a4', 'Finalizado')
                                         ->exists() ? 'success' : 'danger';
                                     return $status;
                                 }
+
                                 return 'danger';
                             })
+                            ->suffixActions([
+                                Action::make('reabrir_a4')
+                                    ->label('Reabrir')
+                                    ->icon('heroicon-o-arrow-path')
+                                    ->color('danger')
+                                    ->size('sm')
+                                    ->visible(fn ($record) => DiscentesConselho::where('conselho_id', $record->id)
+                                        ->where('status_avaliacao_a4', 'Finalizado')
+                                        ->exists())
+                                    ->requiresConfirmation()
+                                    ->modalHeading('Reabrir avaliação da área')
+                                    ->modalDescription('Isso apenas mudará o status da avaliação desta área para pendente para todos os estudantes do conselho.')
+                                    ->action(function ($record) {
+                                        $this->resetAreaAvaliacoes($record, 'a4');
+                                    }),
+                            ])
                             ->placeholder('—'),
                     ]),
 
