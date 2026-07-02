@@ -254,9 +254,9 @@ class ViewConselho extends ViewRecord
                             })
                             ->placeholder('—'),
 
-                        TextEntry::make('professor02.nome')
+                        TextEntry::make('professor04.nome')
                             ->label(function ($record) {
-                                $professor = Professor::find($record->professor02_id);
+                                $professor = Professor::find($record->professor04_id);
                                 $areaName = AreaConhecimento::find($professor?->area_conhecimento_id)?->nome;
                               //  dd($record);
                                 $status = DiscentesConselho::where('conselho_id', $record->id)
@@ -269,7 +269,7 @@ class ViewConselho extends ViewRecord
                             ->color(function(){
                                 if($this->record) {
                                     $status = DiscentesConselho::where('conselho_id', $this->record->id)
-                                        ->where("status_avaliacao_a2", 'Finalizado')
+                                        ->where("status_avaliacao_a4", 'Finalizado')
                                         ->exists() ? 'success' : 'danger';
                                     return $status;
                                 }

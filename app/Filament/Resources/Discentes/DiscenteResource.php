@@ -26,6 +26,8 @@ use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Database\Eloquent\Builder;
+
 
 class DiscenteResource extends Resource
 {
@@ -36,38 +38,99 @@ class DiscenteResource extends Resource
     protected static ?string $navigationLabel = 'Estudantes';
     protected static string|\UnitEnum|null $navigationGroup = 'Cadastros';
 
+    public static function getEloquentQuery(): Builder
+    {
+        /** @var \App\Models\User */
+        $authUser =  auth()->user();
+
+        if ($authUser->hasRole('Pais')) {
+            return parent::getEloquentQuery()->where('matricula', '=', auth()->user()->username);
+        } else {
+            return static::getModel()::query();
+        }
+    }
+
 
     public static function form(Schema $schema): Schema
     {
         return $schema
             ->components([
                 TextInput::make('nome')
+                    ->disabled(function () {
+                        $authUser = auth()->user();
+                        if ($authUser->hasRole('Pais')) {
+                            return true;
+                        }
+                        return false;
+                    })
                     ->required(),
                 TextInput::make('email_discente')
                     ->label('Email do Discente')
+                    ->disabled(function () {
+                        $authUser = auth()->user();
+                        if ($authUser->hasRole('Pais')) {
+                            return true;
+                        }
+                        return false;
+                    })
                     ->email()
                     ->required(),
                 TextInput::make('email_responsavel')
-                    ->label('Email do Responsável')
+                    ->label('Email do Responsável')                    
                     ->email(),
                 DatePicker::make('data_nascimento')
                     ->label('Data de Nascimento')
+                    ->disabled(function () {
+                        $authUser = auth()->user();
+                        if ($authUser->hasRole('Pais')) {
+                            return true;
+                        }
+                        return false;
+                    })
                     ->date()
                     ->required(),
                 TextInput::make('matricula')
                     ->label('Matrícula')
+                    ->disabled(function () {
+                        $authUser = auth()->user();
+                        if ($authUser->hasRole('Pais')) {
+                            return true;
+                        }
+                        return false;
+                    })
                     ->required(),
                 Select::make('turma')
                     ->label('Turma')
+                    ->disabled(function () {
+                        $authUser = auth()->user();
+                        if ($authUser->hasRole('Pais')) {
+                            return true;
+                        }
+                        return false;
+                    })
                     ->relationship('turmaRelacionada', 'nome')
                     ->searchable()
                     ->preload()
                     ->required(),
                 TextInput::make('status_qa')
                     ->label('Status - Q-Academico')
+                    ->disabled(function () {
+                        $authUser = auth()->user();
+                        if ($authUser->hasRole('Pais')) {
+                            return true;
+                        }
+                        return false;
+                    })
                     ->required(),
                  TextInput::make('senha_responsavel')
                     ->label('Senha do Responsável')
+                    ->hidden(function () {
+                        $authUser = auth()->user();
+                        if ($authUser->hasRole('Pais')) {
+                            return true;
+                        }
+                        return false;
+                    })
                     ->password()
                     ->dehydrateStateUsing(fn($state) => Hash::make($state))
                     ->dehydrated(fn($state) => filled($state))
@@ -85,6 +148,13 @@ class DiscenteResource extends Resource
                     ->label('Foto'),                
                
                 Textarea::make('informacoes_adicionais')
+                    ->disabled(function () {
+                        $authUser = auth()->user();
+                        if ($authUser->hasRole('Pais')) {
+                            return true;
+                        }
+                        return false;
+                    })
                     ->label('Informações Adicionais')
                     ->autosize(),
             ]);
