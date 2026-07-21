@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Turma extends Model
 {
-    
+
 
     protected $fillable = [
         'nome',
@@ -30,5 +30,8 @@ class Turma extends Model
         return $this->belongsToMany(Professor::class, 'professor_turma');
     }
 
-    
+    public function conselhos()
+    {
+        return $this->hasMany(Conselho::class);
+    }
 }

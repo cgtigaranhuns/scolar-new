@@ -242,9 +242,37 @@ class Relatorios extends Page
                         // Action::make('relatorio-professores')
                         //     ->icon('heroicon-o-user')
                         //     ->label('Relatório de Professores'),
-                        // Action::make('relatorio-turmas')
-                        //     ->icon('heroicon-o-user-group')
-                        //     ->label('Relatório de Turmas'),
+                        Action::make('relatorio-turmas')
+                            ->icon('heroicon-o-user-group')
+                            ->label('Relatório de Turmas')
+                            ->schema([
+                                Section::make('Filtros')
+                                    ->columns(2)
+                                    ->schema([
+                                        Select::make('turma_id')
+                                            ->label('Selecione a Turma')
+                                            ->required()
+                                            ->searchable()
+                                            ->options(Turma::all()->pluck('nome', 'id')),
+                                        Select::make('conselho_id')
+                                            ->label('Selecione o Conselho')
+                                            ->required()
+                                            ->searchable()
+                                            ->options(Conselho::all()->pluck('descricao', 'id')),
+                                    ])
+                            ])
+                            ->action(function (array $data, $livewire) {
+                                $params = [];
+                                if ($data['turma_id']) {
+                                    $params['turma_id'] = $data['turma_id'];
+                                }
+                                if ($data['conselho_id']) {
+                                    $params['conselho_id'] = $data['conselho_id'];
+                                }
+                                $queryString = http_build_query($params);
+                                $url = route('relatorioTurmas.pdf') . ($queryString ? ('?' . $queryString) : '');
+                                $livewire->js("window.open('{$url}', '_blank')");
+                            }),
 
                     ])
             ]);
