@@ -364,8 +364,8 @@ class ViewConselho extends ViewRecord
                                         ImageEntry::make('discente.foto')
                                             ->hiddenLabel()
                                             ->disk('public')
-                                            ->height(56)
-                                            ->width(56)
+                                            ->height(120)
+                                            ->width(120)
                                             ->defaultImageUrl('https://ui-avatars.com/api/?name=Discente&background=random')
                                             ->circular()
                                             ->columnSpan(1),
